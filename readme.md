@@ -114,9 +114,9 @@ You can open `architecture_flowchart.html` in a browser to explore:
 
 | Demo | Description | Watch |
 |------|-------------|-------|
-| **Main Application** | Full schema mapping flow: source → joins → target → mappings | [Video](https://veersalabs-my.sharepoint.com/:v:/g/personal/shaurya_gupta_veersatech_com/IQCTjOPEzLdkTbCj8des33HcAdPaSL-OnnGHKlueL62gx6M?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJPbmVEcml2ZUZvckJ1c2luZXNzIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXciLCJyZWZlcnJhbFZpZXciOiJNeUZpbGVzTGlua0NvcHkifX0&e=4upBsc) |
-| **Name Similarity Engine** | Pipeline visualization, abbreviation expansion, conflict detection | [Video](https://veersalabs-my.sharepoint.com/:v:/g/personal/shaurya_gupta_veersatech_com/IQAdUk0G7bHSSKVftomZehT9AVgBGvMbbX_g2fQqTLNOqSE?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJPbmVEcml2ZUZvckJ1c2luZXNzIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXciLCJyZWZlcnJhbFZpZXciOiJNeUZpbGVzTGlua0NvcHkifX0&e=uqHm1i) |
-| **Value Similarity Engine** | Column profiling, type detection, similarity scoring | [Video](https://veersalabs-my.sharepoint.com/:v:/g/personal/shaurya_gupta_veersatech_com/IQAf5FtFfTkNQL2OGfFKGp6uAXBchzJw5FIoH5EGRo9JAVU?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJPbmVEcml2ZUZvckJ1c2luZXNzIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXciLCJyZWZlcnJhbFZpZXciOiJNeUZpbGVzTGlua0NvcHkifX0&e=obsD5w) |
+| **Main Application** | Full schema mapping flow: source → joins → target → mappings | |
+| **Name Similarity Engine** | Pipeline visualization, abbreviation expansion, conflict detection | |
+| **Value Similarity Engine** | Column profiling, type detection, similarity scoring | |
 
 ---
 

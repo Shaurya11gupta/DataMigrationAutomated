@@ -1,0 +1,13 @@
+# Requirements for LLM Schema Matcher (V3)
+# Install with: pip install -r requirements-llm-matcher.txt
+#
+# This fine-tunes a small LLM (Phi-3-mini 3.8B) with LoRA for schema mapping.
+# Requires a GPU with at least 8GB VRAM (16GB+ recommended).
+
+torch>=2.0.0
+transformers>=4.40.0,<4.46.0
+peft>=0.10.0
+trl>=0.8.0
+datasets>=2.18.0
+accelerate>=1.1.0
+numpy>=1.24.0

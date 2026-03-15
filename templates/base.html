@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}DataMigrationCrane{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <div class="app-wrapper">
+    <!-- Navbar -->
+    <nav class="navbar">
+      <a href="/" class="navbar-brand">DataMigrationCrane</a>
+      <div class="navbar-nav">
+        <a href="{{ url_for('source_ingestion') }}" class="{% if active_page == 'source_ingest' %}active{% endif %}">Source Ingestion</a>
+        <a href="{{ url_for('source_visualization') }}" class="{% if active_page == 'source_viz' %}active{% endif %}">Source Graph</a>
+        <a href="{{ url_for('target_ingestion') }}" class="{% if active_page == 'target_ingest' %}active{% endif %}">Target Ingestion</a>
+        <a href="{{ url_for('target_visualization') }}" class="{% if active_page == 'target_viz' %}active{% endif %}">Mapping Results</a>
+      </div>
+      <div class="step-pills">
+        <div class="step-pill {% if step >= 1 %}{% if step == 1 %}active{% else %}done{% endif %}{% endif %}">
+          <span class="step-num">1</span> Source
+        </div>
+        <div class="step-pill {% if step >= 2 %}{% if step == 2 %}active{% else %}done{% endif %}{% endif %}">
+          <span class="step-num">2</span> Graph
+        </div>
+        <div class="step-pill {% if step >= 3 %}{% if step == 3 %}active{% else %}done{% endif %}{% endif %}">
+          <span class="step-num">3</span> Target
+        </div>
+        <div class="step-pill {% if step >= 4 %}{% if step == 4 %}active{% else %}done{% endif %}{% endif %}">
+          <span class="step-num">4</span> Map
+        </div>
+      </div>
+    </nav>
+
+    <!-- Page content -->
+    <main class="page">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <!-- Loading overlay (hidden by default) -->
+  <div id="loading-overlay" class="loading-overlay" style="display:none">
+    <div class="spinner"></div>
+    <div class="loading-text" id="loading-text">Processing...</div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

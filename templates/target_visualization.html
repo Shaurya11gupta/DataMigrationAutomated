@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+{% set active_page = "target_viz" %}
+{% set step = 4 %}
+
+{% block title %}Mapping Results – DataMigrationCrane{% endblock %}
+
+{% block content %}
+<div class="page-header fade-in">
+  <h1 class="page-title">Candidate Selection Results</h1>
+  <p class="page-subtitle">Target columns mapped to source columns with join paths. Pipeline stops at candidate selection.</p>
+</div>
+
+<!-- Summary stats -->
+<div class="stats-grid fade-in delay-1" id="stats-grid"></div>
+
+<!-- Pipeline badge -->
+<div class="fade-in delay-1" style="margin-bottom:1.5rem">
+  <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;">
+    <span class="text-sm text-dim">Pipeline:</span>
+    <span id="badge-a" style="padding:.25rem .6rem;border-radius:4px;font-size:.75rem;font-weight:600;background:rgba(99,102,241,.15);color:var(--primary-l);">Candidate Selection (schema_matcher_llm1 on CPU)</span>
+  </div>
+</div>
+
+<!-- Table groups -->
+<div id="results-container" class="fade-in delay-2"></div>
+
+<!-- Actions -->
+<div style="margin-top:2rem;display:flex;gap:1rem;">
+  <a href="{{ url_for('target_ingestion') }}" class="btn btn-secondary">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    Modify Target
+  </a>
+  <a href="{{ url_for('source_ingestion') }}" class="btn btn-secondary">Start Over</a>
+  <button class="btn btn-primary" onclick="exportResults()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Export JSON
+  </button>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const results = {{ results | safe }};
+
+  /* ---- Stats ---- */
+  const stats = results.stats || {};
+  const statsHTML = `
+    <div class="stat-card">
+      <div class="stat-value primary">${stats.total_columns || 0}</div>
+      <div class="stat-label">Total Target Columns</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value success">${stats.mapped_columns || 0}</div>
+      <div class="stat-label">Columns Mapped</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value accent">${stats.mapping_rate || 0}%</div>
+      <div class="stat-label">Mapping Rate</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value warning">${stats.total_time || 0}s</div>
+      <div class="stat-label">Total Pipeline Time</div>
+    </div>
+  `;
+  document.getElementById('stats-grid').innerHTML = statsHTML;
+
+  /* ---- Render results ---- */
+  const container = document.getElementById('results-container');
+  let html = '';
+
+  (results.tables || []).forEach((table, ti) => {
+    const colCount = table.columns.length;
+    const mappedCount = table.columns.filter(c => c.final_source && c.final_source.length > 0).length;
+    const avgConf = table.columns.length > 0
+      ? (table.columns.reduce((s, c) => s + (c.final_confidence || 0), 0) / table.columns.length)
+      : 0;
+
+    html += `
+    <div class="table-group" id="tg-${ti}">
+      <div class="table-group-header" onclick="toggleGroup(${ti})">
+        <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        <span class="table-group-name">${table.name}</span>
+        <span style="font-size:.8rem;color:var(--accent);margin-left:.5rem;">${mappedCount}/${colCount} mapped</span>
+        <span class="table-group-meta">avg confidence: ${Math.round(avgConf * 100)}%</span>
+      </div>
+      <div class="table-group-body" id="tgb-${ti}">
+        <!-- Header row -->
+        <div class="mapping-row" style="font-weight:600;font-size:.78rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border);">
+          <div>Target Column</div>
+          <div>Source Mapping</div>
+          <div>Confidence</div>
+          <div>Details</div>
+        </div>
+    `;
+
+    table.columns.forEach((col, ci) => {
+      const src = (col.final_source || []).join(', ') || '—';
+      const conf = col.final_confidence || 0;
+      const cClass = conf >= 0.75 ? 'conf-high' : (conf >= 0.5 ? 'conf-med' : 'conf-low');
+      const hasJoin = col.stage_a?.join_path?.length > 0;
+
+      html += `
+        <div class="mapping-row">
+          <div>
+            <div class="mapping-col-name">${col.name}</div>
+            <div class="text-sm text-muted">${col.type}${col.description ? ' · ' + col.description : ''}</div>
+          </div>
+          <div class="mapping-source">
+            ${src}
+            ${hasJoin ? '<span style="display:block;font-size:.7rem;color:var(--warning);margin-top:.15rem;">via join</span>' : ''}
+          </div>
+          <div class="mapping-confidence">
+            <div class="confidence-bar"><div class="confidence-fill ${cClass}" style="width:${Math.round(conf*100)}%"></div></div>
+            <span class="confidence-val">${Math.round(conf*100)}%</span>
+          </div>
+          <div>
+            <button class="btn btn-sm btn-secondary" onclick="showColDetail(${ti}, ${ci})">View</button>
+          </div>
+        </div>
+      `;
+    });
+
+    html += `</div></div>`;
+  });
+
+  container.innerHTML = html;
+
+  function toggleGroup(idx) {
+    const header = document.querySelector(`#tg-${idx} .table-group-header`);
+    const body = document.getElementById(`tgb-${idx}`);
+    header.classList.toggle('collapsed');
+    body.style.display = header.classList.contains('collapsed') ? 'none' : 'block';
+  }
+
+  /* ---- Column detail modal ---- */
+  function showColDetail(ti, ci) {
+    const col = results.tables[ti].columns[ci];
+    const tableName = results.tables[ti].name;
+    let content = `<h3 style="margin-bottom:.75rem">${tableName}.${col.name}</h3>`;
+    content += `<p class="text-dim text-sm mb-1">Type: ${col.type}${col.description ? ' — ' + col.description : ''}</p>`;
+
+    // Candidate selection details
+    if (col.stage_a) {
+      const a = col.stage_a;
+      content += `<div class="card" style="margin-bottom:.75rem">`;
+      content += `<div class="card-title" style="font-size:.85rem;color:var(--primary-l);margin-bottom:.5rem">Candidate Selection</div>`;
+      content += `<div class="text-sm"><strong>Source columns:</strong> <span class="mono" style="color:var(--accent)">${(a.source_columns||[]).join(', ') || '—'}</span></div>`;
+      content += `<div class="text-sm"><strong>Confidence:</strong> ${Math.round((a.confidence||0)*100)}%</div>`;
+      if (a.join_path && a.join_path.length) {
+        content += `<div class="text-sm"><strong>Join path:</strong> <span class="mono">${a.join_path.join(' → ')}</span></div>`;
+      }
+      content += `<div class="text-sm text-muted">Time: ${a.time || 0}s | Abstain: ${a.abstain ? 'yes' : 'no'}</div>`;
+      content += `</div>`;
+    }
+
+    // Stage B details
+    if (col.stage_b) {
+      const b = col.stage_b;
+      content += `<div class="card" style="margin-bottom:.75rem">`;
+      content += `<div class="card-title" style="font-size:.85rem;color:var(--secondary);margin-bottom:.5rem">Stage B: ML Reranking</div>`;
+      content += `<div class="text-sm"><strong>Source:</strong> <span class="mono" style="color:var(--accent)">${(b.source_columns||[]).join(', ') || '—'}</span></div>`;
+      content += `<div class="text-sm"><strong>Combined Score:</strong> ${Math.round((b.combined_score||0)*100)}%</div>`;
+      content += `<div class="text-sm text-muted">Time: ${b.time || 0}s</div>`;
+      content += `</div>`;
+    }
+
+    // Alternatives
+    if (col.alternatives && col.alternatives.length) {
+      content += `<div class="card">`;
+      content += `<div class="card-title" style="font-size:.85rem;color:var(--warning);margin-bottom:.5rem">Alternative Candidates</div>`;
+      col.alternatives.forEach((alt, i) => {
+        content += `<div class="text-sm" style="margin-bottom:.35rem">
+          ${i+2}. <span class="mono" style="color:var(--accent)">${(alt.source_columns||[]).join(', ')}</span>
+          (${Math.round((alt.confidence||0)*100)}%)
+        </div>`;
+      });
+      content += `</div>`;
+    }
+
+    // Show in overlay
+    showModal(content);
+  }
+
+  function showModal(content) {
+    let modal = document.getElementById('detail-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'detail-modal';
+      modal.style.cssText = `position:fixed;inset:0;background:rgba(15,23,42,.85);backdrop-filter:blur(8px);z-index:9999;
+        display:flex;align-items:center;justify-content:center;padding:2rem;`;
+      modal.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+      document.body.appendChild(modal);
+    }
+    modal.innerHTML = `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+      padding:1.5rem;max-width:600px;width:100%;max-height:80vh;overflow-y:auto;box-shadow:var(--shadow-lg);">
+      ${content}
+      <div style="margin-top:1rem;text-align:right;">
+        <button class="btn btn-sm btn-secondary" onclick="document.getElementById('detail-modal').style.display='none'">Close</button>
+      </div>
+    </div>`;
+    modal.style.display = 'flex';
+  }
+
+  function exportResults() {
+    const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'mapping_results.json'; a.click();
+    URL.revokeObjectURL(url);
+  }
+</script>
+{% endblock %}

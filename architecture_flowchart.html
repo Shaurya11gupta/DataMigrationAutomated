@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DataMigrationCrane — Architecture Flow</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f0f12;
+      --bg-card: #18181c;
+      --bg-elevated: #1e1e24;
+      --text: #e4e4e7;
+      --text-dim: #a1a1aa;
+      --accent: #6366f1;
+      --accent-soft: rgba(99, 102, 241, 0.15);
+      --green: #22c55e;
+      --green-soft: rgba(34, 197, 94, 0.15);
+      --amber: #f59e0b;
+      --amber-soft: rgba(245, 158, 11, 0.15);
+      --cyan: #06b6d4;
+      --cyan-soft: rgba(6, 182, 212, 0.15);
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Outfit', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin: 0 0 0.5rem;
+      background: linear-gradient(135deg, #fff 0%, #a1a1aa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .subtitle {
+      color: var(--text-dim);
+      font-size: 0.95rem;
+    }
+    .diagram-wrapper {
+      background: var(--bg-card);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .mermaid {
+      display: flex;
+      justify-content: center;
+    }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      color: var(--text-dim);
+    }
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .legend-dot.user { background: var(--accent); }
+    .legend-dot.api { background: var(--cyan); }
+    .legend-dot.engine { background: var(--green); }
+    .legend-dot.model { background: var(--amber); }
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+    }
+    .step-card {
+      background: var(--bg-elevated);
+      border-radius: 10px;
+      padding: 1.25rem;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .step-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--accent);
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    .step-title { font-weight: 600; margin-bottom: 0.35rem; }
+    .step-desc { font-size: 0.85rem; color: var(--text-dim); }
+    footer {
+      text-align: center;
+      margin-top: 2.5rem;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>DataMigrationCrane Architecture Flow</h1>
+      <p class="subtitle">From source schema to target column mappings — engines, join discovery &amp; candidate selection</p>
+    </header>
+
+    <div class="diagram-wrapper">
+      <div class="mermaid">
+flowchart TB
+    subgraph User["👤 User Flow"]
+        A1["1. Source Ingestion<br/><small>Define source tables</small>"]
+        A2["2. View Join Graph<br/><small>Review discovered joins</small>"]
+        A3["3. Target Ingestion<br/><small>Define target schema</small>"]
+        A4["4. Mapping Results<br/><small>Source→Target mappings</small>"]
+    end
+
+    subgraph API["API Layer"]
+        B1["POST /api/source/submit"]
+        B2["POST /api/target/map"]
+    end
+
+    subgraph JoinDiscovery["🔗 Join Discovery Engine"]
+        C1["json_to_tables<br/><small>JSON → Table objects</small>"]
+        C2["JoinGraphBuilderV2"]
+        C3["ValueSimilarity +<br/>ConstraintCompatibilityJoin"]
+        C4["discover_joins"]
+        C5["edges_to_json + tables_to_summary"]
+    end
+
+    subgraph CandidateEngine["🎯 Candidate Selection Engine"]
+        D1["run_full_mapping"]
+        D2["_try_v3_mapping"]
+        D3["SchemaMatcherLLM"]
+        D4["Phi-3-mini + LoRA<br/><small>schema_matcher_llm1</small>"]
+    end
+
+    subgraph PerColumn["Per Target Column Loop"]
+        E1["build_mapping_prompt"]
+        E2["LLM generate"]
+        E3["parse_llm_output"]
+        E4["validate_columns"]
+        E5["rank → final_source,<br/>transform_type, confidence"]
+    end
+
+    A1 -->|"Submit source JSON"| B1
+    B1 --> C1
+    C1 --> C2
+    C3 --> C2
+    C2 --> C4
+    C4 --> C5
+    C5 -->|"Redirect"| A2
+
+    A3 -->|"Submit target JSON"| B2
+    B2 --> D1
+    D1 --> D2
+    D2 --> D3
+    D3 --> D4
+
+    D4 --> E1
+    E1 -->|"Schema + joins + target"| E2
+    E2 --> E3
+    E3 --> E4
+    E4 --> E5
+
+    E5 -->|"All columns mapped"| A4
+
+    style User fill:#1a1a24,stroke:#6366f1,stroke-width:2px
+    style API fill:#1a1a24,stroke:#06b6d4,stroke-width:2px
+    style JoinDiscovery fill:#1a1a24,stroke:#22c55e,stroke-width:2px
+    style CandidateEngine fill:#1a1a24,stroke:#f59e0b,stroke-width:2px
+    style PerColumn fill:#1a1a24,stroke:#a78bfa,stroke-width:2px
+    style D4 fill:#292524,stroke:#f59e0b
+      </div>
+    </div>
+
+    <div class="legend">
+      <span class="legend-item"><span class="legend-dot user"></span> User steps</span>
+      <span class="legend-item"><span class="legend-dot api"></span> Flask API</span>
+      <span class="legend-item"><span class="legend-dot engine"></span> Engines &amp; discovery</span>
+      <span class="legend-item"><span class="legend-dot model"></span> LLM model</span>
+    </div>
+
+    <div class="steps-grid" style="margin-top: 2rem;">
+      <div class="step-card">
+        <div class="step-num">STEP 1</div>
+        <div class="step-title">Source Ingestion</div>
+        <div class="step-desc">User defines source tables (JSON or visual builder). On submit, JSON is converted to Table objects via json_to_tables.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">JOIN DISCOVERY</div>
+        <div class="step-title">JoinGraphBuilderV2</div>
+        <div class="step-desc">Uses ValueSimilarity + ConstraintCompatibilityJoin to discover FK relationships between tables. Outputs List[JoinEdge] with confidence scores.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">STEP 2 &amp; 3</div>
+        <div class="step-title">Visualization &amp; Target</div>
+        <div class="step-desc">Join graph is displayed. User defines target schema (tables, columns with descriptions).</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">CANDIDATE SELECTION</div>
+        <div class="step-title">SchemaMatcherLLM (V3)</div>
+        <div class="step-desc">Phi-3-mini + LoRA adapter (schema_matcher_llm1). For each target column: builds prompt (schema + joins + target), generates mapping, parses source_columns and transform_type.</div>
+      </div>
+    </div>
+
+    <footer>
+      DataMigrationCrane — <a href="http://127.0.0.1:5000">Run app</a> | pipeline_bridge + candidate_generation_v3
+    </footer>
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        primaryColor: '#1e1e24',
+        primaryTextColor: '#e4e4e7',
+        primaryBorderColor: '#3f3f46',
+        lineColor: '#52525b',
+        secondaryColor: '#27272a',
+        tertiaryColor: '#18181b',
+        fontFamily: 'Outfit, system-ui, sans-serif',
+        fontSize: '14px'
+      },
+      flowchart: {
+        curve: 'basis',
+        padding: 20,
+        useMaxWidth: true,
+        htmlLabels: true
+      }
+    });
+  </script>
+</body>
+</html>

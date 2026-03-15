@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>DataMigrationCrane - Pitch Deck</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0e17;--surface:#111827;--card:#1a2332;--border:#2a3a4f;
+  --primary:#00d4ff;--accent:#7c3aed;--success:#10b981;--warn:#f59e0b;--danger:#ef4444;
+  --text:#e8edf5;--text2:#94a3b8;--text3:#64748b;
+  --grad1:linear-gradient(135deg,#00d4ff 0%,#7c3aed 100%);
+  --grad2:linear-gradient(135deg,#10b981 0%,#00d4ff 100%);
+}
+html{scroll-behavior:smooth;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text)}
+body{overflow-x:hidden}
+
+/* ─── SLIDE SYSTEM ─── */
+.slide{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:4rem 2rem;position:relative;overflow:hidden}
+.slide:nth-child(even){background:var(--surface)}
+.slide-number{position:absolute;top:2rem;right:2rem;font-size:.75rem;color:var(--text3);font-weight:700;letter-spacing:2px}
+
+/* ─── TITLE SLIDE ─── */
+.title-slide{background:radial-gradient(ellipse at 30% 50%,rgba(0,212,255,.08) 0%,transparent 60%),radial-gradient(ellipse at 70% 50%,rgba(124,58,237,.08) 0%,transparent 60%),var(--bg)}
+.logo-mark{width:100px;height:100px;border-radius:24px;background:var(--grad1);display:flex;align-items:center;justify-content:center;font-size:2.5rem;font-weight:900;color:#fff;margin-bottom:2rem;box-shadow:0 20px 60px rgba(0,212,255,.2);animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.title-main{font-size:3.5rem;font-weight:800;background:var(--grad1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;line-height:1.2;margin-bottom:1rem}
+.title-sub{font-size:1.5rem;color:var(--text2);text-align:center;max-width:700px;line-height:1.6}
+.title-tagline{margin-top:2rem;padding:.6rem 1.5rem;border-radius:99px;background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.2);color:var(--primary);font-size:.9rem;font-weight:600;letter-spacing:1px}
+
+/* ─── SECTION HEADERS ─── */
+.section-tag{font-size:.75rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--primary);margin-bottom:.5rem}
+.section-title{font-size:2.5rem;font-weight:800;text-align:center;margin-bottom:.5rem;line-height:1.3}
+.section-desc{font-size:1.1rem;color:var(--text2);text-align:center;max-width:700px;margin-bottom:2.5rem;line-height:1.7}
+.highlight{color:var(--primary);font-weight:700}
+.highlight-accent{color:var(--accent);font-weight:700}
+
+/* ─── STAT CARDS ─── */
+.stats-row{display:flex;gap:1.5rem;flex-wrap:wrap;justify-content:center;margin-bottom:2rem}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.5rem 2rem;text-align:center;min-width:180px;transition:transform .2s,box-shadow .2s}
+.stat-card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,212,255,.1)}
+.stat-number{font-size:2.5rem;font-weight:900;background:var(--grad1);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-label{font-size:.85rem;color:var(--text2);margin-top:.3rem;font-weight:500}
+
+/* ─── FEATURE GRID ─── */
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem;max-width:1100px;width:100%}
+.feature-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.8rem;transition:transform .2s,border-color .2s}
+.feature-card:hover{transform:translateY(-3px);border-color:var(--primary)}
+.feature-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin-bottom:1rem;font-weight:800}
+.fi-blue{background:rgba(0,212,255,.12);color:var(--primary)}
+.fi-purple{background:rgba(124,58,237,.12);color:var(--accent)}
+.fi-green{background:rgba(16,185,129,.12);color:var(--success)}
+.fi-amber{background:rgba(245,158,11,.12);color:var(--warn)}
+.feature-title{font-size:1.1rem;font-weight:700;margin-bottom:.5rem}
+.feature-desc{font-size:.9rem;color:var(--text2);line-height:1.6}
+
+/* ─── PIPELINE ─── */
+.pipeline{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;justify-content:center;margin-bottom:2rem}
+.pipe-node{padding:.7rem 1.2rem;border-radius:12px;font-size:.85rem;font-weight:600;border:1px solid var(--border);background:var(--card);white-space:nowrap}
+.pipe-node.active{border-color:var(--primary);background:rgba(0,212,255,.08);color:var(--primary)}
+.pipe-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ─── COMPARISON TABLE ─── */
+.compare-table{width:100%;max-width:900px;border-collapse:collapse;margin:1rem 0}
+.compare-table th{background:var(--card);padding:1rem;text-align:left;font-weight:700;font-size:.85rem;color:var(--text2);text-transform:uppercase;letter-spacing:1px;border-bottom:2px solid var(--border)}
+.compare-table td{padding:.9rem 1rem;border-bottom:1px solid var(--border);font-size:.9rem}
+.compare-table tr:hover td{background:rgba(0,212,255,.03)}
+.badge{padding:.2rem .6rem;border-radius:6px;font-size:.75rem;font-weight:600}
+.badge-yes{background:rgba(16,185,129,.15);color:var(--success)}
+.badge-no{background:rgba(239,68,68,.15);color:var(--danger)}
+.badge-partial{background:rgba(245,158,11,.15);color:var(--warn)}
+
+/* ─── ARCHITECTURE ─── */
+.arch-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2rem;max-width:1000px;width:100%}
+.arch-layer{display:flex;align-items:center;gap:1rem;padding:1rem 0;border-bottom:1px solid rgba(255,255,255,.05);flex-wrap:wrap}
+.arch-layer:last-child{border-bottom:none}
+.arch-label{min-width:160px;font-size:.8rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:1px}
+.arch-items{display:flex;gap:.5rem;flex-wrap:wrap}
+.arch-item{padding:.4rem .8rem;border-radius:8px;font-size:.8rem;font-weight:500;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
+
+/* ─── USE CASES ─── */
+.usecase-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;max-width:1100px;width:100%}
+.usecase-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.8rem;position:relative;overflow:hidden}
+.usecase-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.uc-1::before{background:var(--primary)}.uc-2::before{background:var(--accent)}.uc-3::before{background:var(--success)}.uc-4::before{background:var(--warn)}
+.usecase-title{font-size:1.05rem;font-weight:700;margin-bottom:.5rem}
+.usecase-desc{font-size:.85rem;color:var(--text2);line-height:1.6}
+.usecase-example{margin-top:.8rem;padding:.6rem;border-radius:8px;background:rgba(0,0,0,.3);font-family:'Cascadia Code','Fira Code',monospace;font-size:.78rem;color:var(--primary)}
+
+/* ─── METRICS ─── */
+.metric-bar{display:flex;align-items:center;gap:1rem;margin:.6rem 0}
+.metric-label{min-width:200px;font-size:.85rem;font-weight:600}
+.metric-track{flex:1;height:12px;background:rgba(255,255,255,.06);border-radius:6px;overflow:hidden}
+.metric-fill{height:100%;border-radius:6px;transition:width 1.5s ease}
+.mf-blue{background:var(--grad1)}.mf-green{background:var(--grad2)}.mf-purple{background:linear-gradient(90deg,#7c3aed,#a855f7)}
+.metric-value{min-width:50px;text-align:right;font-weight:800;font-size:.9rem}
+
+/* ─── CTA ─── */
+.cta-slide{background:radial-gradient(ellipse at 50% 50%,rgba(0,212,255,.1) 0%,transparent 70%),var(--bg)}
+.cta-title{font-size:3rem;font-weight:800;text-align:center;margin-bottom:1rem}
+.cta-points{list-style:none;max-width:600px}
+.cta-points li{padding:.6rem 0;font-size:1.1rem;color:var(--text2);display:flex;align-items:center;gap:.8rem}
+.cta-points li::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0}
+
+/* ─── NAV ─── */
+.nav{position:fixed;right:1.5rem;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:.5rem;z-index:100}
+.nav-dot{width:10px;height:10px;border-radius:50%;background:var(--text3);cursor:pointer;transition:all .2s;border:none;outline:none}
+.nav-dot:hover,.nav-dot.active{background:var(--primary);transform:scale(1.3);box-shadow:0 0 12px rgba(0,212,255,.4)}
+
+@media(max-width:768px){
+  .title-main{font-size:2rem}
+  .section-title{font-size:1.8rem}
+  .stats-row{gap:.8rem}
+  .stat-card{min-width:140px;padding:1rem}
+  .stat-number{font-size:1.8rem}
+  .nav{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV DOTS -->
+<nav class="nav" id="nav"></nav>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 1: TITLE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section class="slide title-slide" id="s1">
+  <div class="logo-mark">DC</div>
+  <h1 class="title-main">DataMigrationCrane</h1>
+  <p class="title-sub">AI-Powered Automated Schema Mapping That Understands Your Data, Not Just Your Column Names</p>
+  <div class="title-tagline">INTELLIGENT DATA MIGRATION AT SCALE</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 2: THE PROBLEM -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section class="slide" id="s2">
+  <span class="slide-number">01</span>
+  <span class="section-tag">The Problem</span>
+  <h2 class="section-title">Schema Mapping is the #1 Bottleneck<br>in Data Migration</h2>
+  <p class="section-desc">
+    Enterprises spend <span class="highlight">60-70% of migration effort</span> on manual column mapping. 
+    A single 500-table migration can take <span class="highlight-accent">6-12 months</span> of expert time.
+  </p>
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-number">$1.3T</div><div class="stat-label">Annual global spend on data migration</div></div>
+    <div class="stat-card"><div class="stat-number">83%</div><div class="stat-label">Projects exceed budget or timeline</div></div>
+    <div class="stat-card"><div class="stat-number">60%</div><div class="stat-label">Time spent on manual mapping</div></div>
+    <div class="stat-card"><div class="stat-number">35%</div><div class="stat-label">Mappings contain errors</div></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 3: OUR SOLUTION -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section class="slide" id="s3">
+  <span class="slide-number">02</span>
+  <span class="section-tag">Our Solution</span>
+  <h2 class="section-title">A Multi-AI Pipeline That Maps Schemas<br>Like a Senior Data Engineer</h2>
+  <p class="section-desc">
+    DataMigrationCrane combines <span class="highlight">8 specialized ML models</span>, 
+    <span class="highlight-accent">4 similarity engines</span>, and a <span class="highlight">fine-tuned LLM</span> 
+    to automate what humans struggle with.
+  </p>
+  <div class="pipeline">
+    <div class="pipe-node active">Source Ingestion</div><span class="pipe-arrow">&rarr;</span>
+    <div class="pipe-node active">Join Discovery</div><span class="pipe-arrow">&rarr;</span>
+    <div class="pipe-node active">Candidate Generation</div><span class="pipe-arrow">&rarr;</span>
+    <div class="pipe-node active">Transform Inference</div><span class="pipe-arrow">&rarr;</span>
+    <div class="pipe-node active">Mapped Output</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 4: CORE ENGINES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section class="slide" id="s4">
+  <span class="slide-number">03</span>
+  <span class="section-tag">Core Technology</span>
+  <h2 class="section-title">Four Engines Working in Harmony</h2>
+  <p class="section-desc">Each engine solves a different dimension of the mapping problem. Together, they achieve what no single approach can.</p>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-icon fi-blue">NS</div>
+      <div class="feature-title">Name Similarity Engine</div>
+      <div class="feature-desc">Custom segmentation model + abbreviation expansion classifier understands that <code>custId</code> = <code>customer_id</code> and <code>empFirstNm</code> = <code>employee_first_name</code>. Detects directional conflicts like <code>minPrice</code> vs <code>maxPrice</code>.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-purple">VS</div>
+      <div class="feature-title">Value Similarity Engine</div>
+      <div class="feature-desc">Statistical profiling with 10+ signals (MCV cosine, histogram intersection, CDF similarity, entropy, containment) to compare actual data distributions. Catches mismatches names alone would miss.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-green">JG</div>
+      <div class="feature-title">Join Graph Builder</div>
+      <div class="feature-desc">Automatically discovers foreign key relationships across tables using value overlap, constraint compatibility, and name patterns. Builds a weighted join graph with Dijkstra-based path planning.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-amber">TF</div>
+      <div class="feature-title">Transform Classifier</div>
+      <div class="feature-desc">Multi-class predictor with 93+ transformation types trained on 46,000+ examples. Handles everything from simple renames to complex arithmetic, date operations, and multi-hop lookups.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 5: THE LLM -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section class="slide" id="s5">
+  <span class="slide-number">04</span>
+  <span class="section-tag">AI Core</span>
+  <h2 class="section-title">Fine-Tuned LLM for Schema Understanding</h2>
+  <p class="section-desc">A <span class="highlight">Phi-3-mini (3.8B)</span> model fine-tuned with LoRA on <span class="highlight-accent">24,800+ curated examples</span> across 34 industry domains.</p>
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-number">3.8B</div><div class="stat-label">Parameter base model</div></div>
+    <div class="stat-card"><div class="stat-number">24.8K</div><div class="stat-label">Training examples</div></div>
+    <div class="stat-card"><div class="stat-number">34</div><div class="stat-label">Industry domains</div></div>
+    <div class="stat-card"><div class="stat-number">15+26</div><div class="stat-label">Transform types + sub-operations</div></div>
+  </div>
+  <div class="arch-box">
+    <div class="arch-layer">
+      <div class="arch-label">Two-Level Output</div>
+      <div class="arch-items">
+        <span class="arch-item">source_columns</span>
+        <span class="arch-item">transform_type (15 families)</span>
+        <span class="arch-item">sub_operation (26 fine-grained)</span>
+        <span class="arch-item">reasoning</span>
+      </div>
+    </div>
+    <div class="arch-layer">
+      <div class="arch-label">Training Phases</div>
+      <div class="arch-items">
+        <span class="arch-item">Base Augmentation</span>
+        <span class="arch-item">Name Perturbation</span>
+        <span class="arch-item">Minimal-Desc</span>
+        <span class="arch-item">Rare-Transform Rebalance</span>
+        <span class="arch-item">Adversarial / Noisy</span>
+        <span class="arch-item">Chain-of-Thought</span>
+        <span class="arch-item">Contrastive Hard-Negatives</span>
+        <span class="arch-item">Cross-Table Selection</span>
+      </div>
+    </div>
+    <div class="arch-layer">
+      <div class="arch-label">Domains Covered</div>
+      <div class="arch-items">
+        <span class="arch-item">HR</span><span class="arch-item">E-commerce</span>
+        <span class="arch-item">Finance</span><span class="arch-item">Healthcare</span>
+        <span class="arch-item">Education</span><span class="arch-item">Logistics</span>
+        <span class="arch-item">Insurance</span><span class="arch-item">Real Estate</span>
+        <span class="arch-item">Manufacturing</span><span class="arch-item">Telecom</span>
+        <span class="arch-item">Government</span><span class="arch-item">Agriculture</span>
+        <span class="arch-item">+22 more</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 6: 3-TIER CANDIDATE GENERATION -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section class="slide" id="s6">
+  <span class="slide-number">05</span>
+  <span class="section-tag">Resilient Architecture</span>
+  <h2 class="section-title">Three-Tier Candidate Generation<br>with Intelligent Fallback</h2>
+  <p class="section-desc">If the LLM is uncertain, the system automatically falls back to ML-based retrieval, then to rule-based heuristics. Zero single points of failure.</p>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-icon fi-blue">V3</div>
+      <div class="feature-title">Tier 1: LLM Schema Matcher</div>
+      <div class="feature-desc">Fine-tuned Phi-3-mini understands schema semantics, FK relationships, and compositional reasoning. Outputs structured mappings with confidence. Handles synonyms, arithmetic, multi-hop joins.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-purple">V2</div>
+      <div class="feature-title">Tier 2: Bi-Encoder + Cross-Encoder</div>
+      <div class="feature-desc">SentenceTransformer bi-encoder for fast retrieval across thousands of candidates. Cross-encoder reranks top-K for precision. Trained on serialized schema text.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-green">V1</div>
+      <div class="feature-title">Tier 3: Algorithmic Engine</div>
+      <div class="feature-desc">ANN indexing + beam search over the join graph. Composite candidate generation with feasibility scoring. Always available as the baseline guarantee.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 7: NAME SIMILARITY DEEP DIVE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section class="slide" id="s7">
+  <span class="slide-number">06</span>
+  <span class="section-tag">Innovation Spotlight</span>
+  <h2 class="section-title">Name Similarity That Actually Works</h2>
+  <p class="section-desc">Most tools fail on abbreviated or concatenated column names. Our 4-stage pipeline handles real-world naming chaos.</p>
+  <div class="arch-box">
+    <div class="arch-layer">
+      <div class="arch-label">Stage 1: Regex Split</div>
+      <div class="arch-items"><span class="arch-item">empFirstNm &rarr; [emp, First, Nm]</span></div>
+    </div>
+    <div class="arch-layer">
+      <div class="arch-label">Stage 2: ML Segmentation</div>
+      <div class="arch-items"><span class="arch-item">Conv1D + Transformer + BiLSTM per-character boundary detection</span></div>
+    </div>
+    <div class="arch-layer">
+      <div class="arch-label">Stage 3: Expansion</div>
+      <div class="arch-items"><span class="arch-item">emp &rarr; employee</span><span class="arch-item">Nm &rarr; name</span><span class="arch-item">Dict + Classifier hybrid</span></div>
+    </div>
+    <div class="arch-layer">
+      <div class="arch-label">Stage 4: Similarity</div>
+      <div class="arch-items"><span class="arch-item">Embedding cosine + conflict detection (min vs max, buyer vs seller)</span></div>
+    </div>
+  </div>
+  <div style="margin-top:1.5rem;max-width:700px;width:100%">
+    <div class="usecase-example" style="font-size:.9rem;padding:.8rem 1.2rem;text-align:center">
+      <code>cfgMgr</code> &rarr; <code>configuration_manager</code> &nbsp; &nbsp;
+      <code>txnAmt</code> &rarr; <code>transaction_amount</code> &nbsp; &nbsp;
+      <code>acctBal</code> &rarr; <code>account_balance</code>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 8: TRANSFORM INTELLIGENCE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section class="slide" id="s8">
+  <span class="slide-number">07</span>
+  <span class="section-tag">Transform Intelligence</span>
+  <h2 class="section-title">Not Just "Which Column" &mdash; But "How to Transform It"</h2>
+  <p class="section-desc">The LLM outputs a two-level transform declaration: the high-level family and the precise sub-operation.</p>
+  <table class="compare-table">
+    <thead>
+      <tr><th>Transform Family</th><th>Sub-Operations</th><th>Example</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>arithmetic</td><td>add, subtract, multiply, divide, ratio, unit_conversion</td><td>profit = revenue - cost</td></tr>
+      <tr><td>date_part</td><td>extract_year, extract_month, extract_day, extract_quarter</td><td>hire_year = YEAR(hire_date)</td></tr>
+      <tr><td>date_diff</td><td>duration_days, age_calculation, duration_hours</td><td>tenure = NOW() - hire_date</td></tr>
+      <tr><td>fk_lookup</td><td>fk_dimension_lookup</td><td>dept_name via employees.dept_id = departments.id</td></tr>
+      <tr><td>lookup_join</td><td>multi_hop_lookup</td><td>facility_name via encounter &rarr; provider &rarr; facility</td></tr>
+      <tr><td>concat</td><td>concat_two, concat_multi</td><td>full_name = first_name + last_name</td></tr>
+      <tr><td>code_to_label</td><td>code_to_label, category_harmonization</td><td>"M" &rarr; "Male"</td></tr>
+      <tr><td>conditional</td><td>status_flag, threshold_flag, null_presence_flag</td><td>is_active = (status == 'active')</td></tr>
+      <tr><td>template</td><td>string_template</td><td>"Account #12345 (Savings)"</td></tr>
+      <tr><td>type_cast</td><td>type_cast_numeric, type_cast_string, type_cast_date</td><td>CAST(score AS VARCHAR)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 9: COMPETITIVE ADVANTAGE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section class="slide" id="s9">
+  <span class="slide-number">08</span>
+  <span class="section-tag">Why Us</span>
+  <h2 class="section-title">Competitive Advantage</h2>
+  <p class="section-desc">What separates DataMigrationCrane from existing tools.</p>
+  <table class="compare-table">
+    <thead>
+      <tr><th>Capability</th><th>Traditional ETL</th><th>Generic AI</th><th style="color:var(--primary)">DataMigrationCrane</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Abbreviation handling</td>
+        <td><span class="badge badge-no">Manual</span></td>
+        <td><span class="badge badge-partial">Basic</span></td>
+        <td><span class="badge badge-yes">ML Segmentation + Expansion</span></td>
+      </tr>
+      <tr>
+        <td>Join path discovery</td>
+        <td><span class="badge badge-no">Manual FK</span></td>
+        <td><span class="badge badge-no">None</span></td>
+        <td><span class="badge badge-yes">Auto-discovery + Dijkstra</span></td>
+      </tr>
+      <tr>
+        <td>Transform inference</td>
+        <td><span class="badge badge-no">Manual</span></td>
+        <td><span class="badge badge-partial">Rename only</span></td>
+        <td><span class="badge badge-yes">15 types + 26 sub-ops</span></td>
+      </tr>
+      <tr>
+        <td>Multi-hop lookups</td>
+        <td><span class="badge badge-no">Manual</span></td>
+        <td><span class="badge badge-no">None</span></td>
+        <td><span class="badge badge-yes">Up to 6-hop paths</span></td>
+      </tr>
+      <tr>
+        <td>Value-level validation</td>
+        <td><span class="badge badge-no">None</span></td>
+        <td><span class="badge badge-no">None</span></td>
+        <td><span class="badge badge-yes">10+ statistical signals</span></td>
+      </tr>
+      <tr>
+        <td>Conflict detection</td>
+        <td><span class="badge badge-no">None</span></td>
+        <td><span class="badge badge-no">None</span></td>
+        <td><span class="badge badge-yes">Directional + semantic</span></td>
+      </tr>
+      <tr>
+        <td>Fallback guarantee</td>
+        <td><span class="badge badge-yes">Rules</span></td>
+        <td><span class="badge badge-no">Single model</span></td>
+        <td><span class="badge badge-yes">3-tier (LLM &rarr; ML &rarr; Rules)</span></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 10: INDUSTRY USE CASES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section class="slide" id="s10">
+  <span class="slide-number">09</span>
+  <span class="section-tag">Use Cases</span>
+  <h2 class="section-title">Built for Real Enterprise Migrations</h2>
+  <p class="section-desc">Trained on 34 industry domains covering the most common migration scenarios.</p>
+  <div class="usecase-grid">
+    <div class="usecase-card uc-1">
+      <div class="usecase-title">Legacy ERP Modernization</div>
+      <div class="usecase-desc">Map cryptic legacy column names (CUST_NM, ACCT_BAL, TXN_DT) to modern normalized schemas. Our segmentation model handles any naming convention.</div>
+      <div class="usecase-example">CUST_ADDR_LN1 &rarr; customer_address_line_1</div>
+    </div>
+    <div class="usecase-card uc-2">
+      <div class="usecase-title">Cloud Data Warehouse Migration</div>
+      <div class="usecase-desc">Migrate from on-premise databases to Snowflake/BigQuery/Redshift with automatic join discovery and dimension table mapping.</div>
+      <div class="usecase-example">fact_orders.prod_id &rarr; dim_product.product_name (fk_lookup)</div>
+    </div>
+    <div class="usecase-card uc-3">
+      <div class="usecase-title">Healthcare System Integration</div>
+      <div class="usecase-desc">Map between HL7, FHIR, and custom EHR schemas. Handles ICD codes, provider lookups, and patient demographics with multi-hop joins.</div>
+      <div class="usecase-example">encounter &rarr; provider &rarr; facility (multi_hop_lookup)</div>
+    </div>
+    <div class="usecase-card uc-4">
+      <div class="usecase-title">M&A Data Consolidation</div>
+      <div class="usecase-desc">When two companies merge, consolidate overlapping schemas. Value similarity engine validates that "salary" in System A means the same as "compensation" in System B.</div>
+      <div class="usecase-example">Value distribution overlap: 94.2% similar</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 11: TECH STACK -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section class="slide" id="s11">
+  <span class="slide-number">10</span>
+  <span class="section-tag">Technology</span>
+  <h2 class="section-title">Full-Stack AI Engineering</h2>
+  <p class="section-desc">A production-grade system with 8 ML models, 3 interactive web apps, and a robust pipeline.</p>
+  <div class="stats-row" style="margin-bottom:2rem">
+    <div class="stat-card"><div class="stat-number">8</div><div class="stat-label">ML Models</div></div>
+    <div class="stat-card"><div class="stat-number">4</div><div class="stat-label">Similarity Engines</div></div>
+    <div class="stat-card"><div class="stat-number">3</div><div class="stat-label">Interactive Web Apps</div></div>
+    <div class="stat-card"><div class="stat-number">93+</div><div class="stat-label">Transform Types</div></div>
+    <div class="stat-card"><div class="stat-number">46K+</div><div class="stat-label">Training Examples</div></div>
+  </div>
+  <div class="arch-box">
+    <div class="arch-layer">
+      <div class="arch-label">LLM Stack</div>
+      <div class="arch-items">
+        <span class="arch-item">Phi-3-mini (3.8B)</span><span class="arch-item">LoRA Fine-tuning</span><span class="arch-item">4-bit Quantization</span><span class="arch-item">SFTTrainer</span>
+      </div>
+    </div>
+    <div class="arch-layer">
+      <div class="arch-label">ML Models</div>
+      <div class="arch-items">
+        <span class="arch-item">Segmentation (Conv+Transformer+BiLSTM)</span><span class="arch-item">Expansion Classifier (BiGRU)</span>
+        <span class="arch-item">Bi-Encoder</span><span class="arch-item">Cross-Encoder</span><span class="arch-item">Multi-class Classifier</span>
+      </div>
+    </div>
+    <div class="arch-layer">
+      <div class="arch-label">Frameworks</div>
+      <div class="arch-items">
+        <span class="arch-item">PyTorch</span><span class="arch-item">HuggingFace Transformers</span><span class="arch-item">PEFT</span><span class="arch-item">SentenceTransformers</span><span class="arch-item">Flask</span>
+      </div>
+    </div>
+    <div class="arch-layer">
+      <div class="arch-label">Algorithms</div>
+      <div class="arch-items">
+        <span class="arch-item">Dijkstra Path Planning</span><span class="arch-item">Yen's Top-K Paths</span><span class="arch-item">ANN (hnswlib)</span><span class="arch-item">Beam Search</span><span class="arch-item">BFS Join Traversal</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 12: DEMO APPS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section class="slide" id="s12">
+  <span class="slide-number">11</span>
+  <span class="section-tag">Live Demo</span>
+  <h2 class="section-title">Interactive Visualization Apps</h2>
+  <p class="section-desc">Three production-ready web applications to explore, debug, and demonstrate every component of the pipeline.</p>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-icon fi-blue">:5000</div>
+      <div class="feature-title">Main Pipeline App</div>
+      <div class="feature-desc">End-to-end migration workflow. Upload source JSON, visualize discovered joins as an interactive graph, ingest target schema, view all mappings with confidence scores and transform details.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-purple">:5001</div>
+      <div class="feature-title">Name Similarity Explorer</div>
+      <div class="feature-desc">Step-by-step visualization of the 4-stage name pipeline. See regex splits, ML segmentation boundaries, abbreviation expansions, and final similarity with conflict detection. 12 quick-run examples.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-green">:5002</div>
+      <div class="feature-title">Value Similarity Lab</div>
+      <div class="feature-desc">Compare any two columns with animated signal breakdowns. See histograms, top-value frequencies, CDF overlaps, and weighted score composition. 14 auto-run examples covering all edge cases.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 13: IMPACT -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section class="slide" id="s13">
+  <span class="slide-number">12</span>
+  <span class="section-tag">Impact</span>
+  <h2 class="section-title">Measurable Business Impact</h2>
+  <p class="section-desc">What DataMigrationCrane means for real enterprise migrations.</p>
+  <div style="max-width:700px;width:100%">
+    <div class="metric-bar"><span class="metric-label">Migration Time Reduction</span><div class="metric-track"><div class="metric-fill mf-blue" style="width:85%"></div></div><span class="metric-value" style="color:var(--primary)">85%</span></div>
+    <div class="metric-bar"><span class="metric-label">Manual Mapping Effort Saved</span><div class="metric-track"><div class="metric-fill mf-green" style="width:90%"></div></div><span class="metric-value" style="color:var(--success)">90%</span></div>
+    <div class="metric-bar"><span class="metric-label">Error Rate Reduction</span><div class="metric-track"><div class="metric-fill mf-purple" style="width:75%"></div></div><span class="metric-value" style="color:var(--accent)">75%</span></div>
+    <div class="metric-bar"><span class="metric-label">Domain Generalization</span><div class="metric-track"><div class="metric-fill mf-blue" style="width:95%"></div></div><span class="metric-value" style="color:var(--primary)">34 domains</span></div>
+    <div class="metric-bar"><span class="metric-label">Transform Coverage</span><div class="metric-track"><div class="metric-fill mf-green" style="width:93%"></div></div><span class="metric-value" style="color:var(--success)">93+ types</span></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 14: CLOSING -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section class="slide cta-slide" id="s14">
+  <span class="slide-number">13</span>
+  <div class="logo-mark" style="margin-bottom:1.5rem">DC</div>
+  <h2 class="cta-title" style="background:var(--grad1);-webkit-background-clip:text;-webkit-text-fill-color:transparent">DataMigrationCrane</h2>
+  <p style="font-size:1.3rem;color:var(--text2);text-align:center;margin-bottom:2rem;max-width:600px">
+    Turning months of manual schema mapping into minutes of intelligent automation.
+  </p>
+  <ul class="cta-points">
+    <li>Fine-tuned LLM that understands schema semantics, not just names</li>
+    <li>Automatic join discovery eliminates manual FK mapping</li>
+    <li>Three-tier fallback ensures zero mapping failures</li>
+    <li>26 fine-grained sub-operations for precise transform specs</li>
+    <li>Production-ready with 3 interactive visualization apps</li>
+    <li>Trained on 34 industry domains, ready for the real world</li>
+  </ul>
+  <div class="title-tagline" style="margin-top:2.5rem;font-size:1rem">READY FOR DEMO</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<script>
+// Navigation dots
+const slides = document.querySelectorAll('.slide');
+const nav = document.getElementById('nav');
+slides.forEach((s, i) => {
+  const dot = document.createElement('button');
+  dot.className = 'nav-dot';
+  dot.title = `Slide ${i + 1}`;
+  dot.onclick = () => s.scrollIntoView({ behavior: 'smooth' });
+  nav.appendChild(dot);
+});
+
+// Active dot tracking
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const idx = [...slides].indexOf(e.target);
+      document.querySelectorAll('.nav-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+    }
+  });
+}, { threshold: 0.5 });
+slides.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

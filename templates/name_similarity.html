@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Name Similarity Engine - Pipeline Visualizer</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/nse_style.css') }}">
+</head>
+<body>
+  <!-- ═══════════════ HEADER ═══════════════ -->
+  <header class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <h1 class="hero-title">Name Similarity Engine</h1>
+      <p class="hero-subtitle">Interactive Pipeline Visualizer</p>
+      <p class="hero-desc">Watch how column names are tokenized, segmented, expanded, and compared in real-time through 4 intelligent stages</p>
+    </div>
+  </header>
+
+  <!-- ═══════════════ ARCHITECTURE DIAGRAM ═══════════════ -->
+  <section class="arch-section">
+    <h2 class="section-title">Pipeline Architecture</h2>
+    <div class="arch-flow">
+      <div class="arch-node arch-input" id="arch-input">
+        <div class="arch-icon">IN</div>
+        <div class="arch-label">Input Names</div>
+      </div>
+      <div class="arch-arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+      <div class="arch-node arch-regex" id="arch-regex">
+        <div class="arch-icon">RE</div>
+        <div class="arch-label">Regex Split</div>
+        <div class="arch-detail">camelCase + underscore tokenizer</div>
+      </div>
+      <div class="arch-arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+      <div class="arch-node arch-seg" id="arch-seg">
+        <div class="arch-icon">SEG</div>
+        <div class="arch-label">Segmentation Model</div>
+        <div class="arch-detail">CNN + Transformer + BiLSTM</div>
+      </div>
+      <div class="arch-arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+      <div class="arch-node arch-expand" id="arch-expand">
+        <div class="arch-icon">EXP</div>
+        <div class="arch-label">Expansion Pipeline</div>
+        <div class="arch-detail">Dict + Classifier + Seq2Seq</div>
+      </div>
+      <div class="arch-arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+      <div class="arch-node arch-sim" id="arch-sim">
+        <div class="arch-icon">SIM</div>
+        <div class="arch-label">Similarity Score</div>
+        <div class="arch-detail">Embedding + Conflict Detection</div>
+      </div>
+    </div>
+
+    <!-- Expansion sub-pipeline detail -->
+    <div class="expansion-detail-box">
+      <h3>Expansion Pipeline (Stage 3 Detail)</h3>
+      <div class="sub-flow">
+        <div class="sub-node sub-dict">
+          <span class="sub-icon">1</span>
+          <span class="sub-text">Dictionary Lookup</span>
+          <span class="sub-count" id="dict-count">55 entries</span>
+        </div>
+        <div class="sub-arrow">--></div>
+        <div class="sub-node sub-clf">
+          <span class="sub-icon">2</span>
+          <span class="sub-text">Expand Classifier</span>
+          <span class="sub-detail">Embedding + Conv1d + GRU</span>
+        </div>
+        <div class="sub-arrow">--></div>
+        <div class="sub-node sub-exp">
+          <span class="sub-icon">3</span>
+          <span class="sub-text">Abbreviation Expander</span>
+          <span class="sub-detail">Transformer Seq2Seq</span>
+        </div>
+      </div>
+      <p class="sub-desc">For each token: if found in dictionary, use it directly. Otherwise, the binary classifier decides if expansion is needed. If yes, the seq2seq model generates the full form character-by-character.</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════ INPUT SECTION ═══════════════ -->
+  <section class="input-section">
+    <h2 class="section-title">Try It Live</h2>
+    <div class="input-panel">
+      <div class="input-group">
+        <label for="name-a">Column Name A</label>
+        <input type="text" id="name-a" placeholder="e.g. custFirstNm" autocomplete="off">
+      </div>
+      <div class="vs-badge">VS</div>
+      <div class="input-group">
+        <label for="name-b">Column Name B</label>
+        <input type="text" id="name-b" placeholder="e.g. customer_first_name" autocomplete="off">
+      </div>
+      <button id="btn-analyze" class="btn-analyze" onclick="runAnalysis()">
+        <span class="btn-text">Analyze Similarity</span>
+        <span class="btn-spinner" style="display:none"></span>
+      </button>
+    </div>
+
+    <!-- Quick examples -->
+    <div class="examples-bar" id="examples-bar">
+      <span class="examples-label">Quick examples:</span>
+      <div class="examples-chips" id="example-chips"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ RESULTS (hidden until analysis) ═══════════════ -->
+  <div id="results-container" style="display:none">
+
+    <!-- ── STEP 1: Regex Split ── -->
+    <section class="step-section" id="step1-section">
+      <div class="step-header">
+        <div class="step-badge step-badge-1">1</div>
+        <div>
+          <h3 class="step-title">Regex Split</h3>
+          <p class="step-desc">Tokenize on camelCase boundaries, underscores, and hyphens</p>
+        </div>
+      </div>
+      <div class="step-content dual-lane">
+        <div class="lane lane-a">
+          <div class="lane-label">Name A</div>
+          <div class="lane-input" id="s1-input-a"></div>
+          <div class="lane-arrow-down"></div>
+          <div class="lane-output" id="s1-output-a"></div>
+        </div>
+        <div class="lane lane-b">
+          <div class="lane-label">Name B</div>
+          <div class="lane-input" id="s1-input-b"></div>
+          <div class="lane-arrow-down"></div>
+          <div class="lane-output" id="s1-output-b"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── STEP 2: Segmentation Model ── -->
+    <section class="step-section" id="step2-section">
+      <div class="step-header">
+        <div class="step-badge step-badge-2">2</div>
+        <div>
+          <h3 class="step-title">Segmentation Model</h3>
+          <p class="step-desc">CNN + Transformer + BiLSTM detects sub-word boundaries</p>
+        </div>
+        <div class="model-badge">ML Model</div>
+      </div>
+      <div class="step-content dual-lane">
+        <div class="lane lane-a">
+          <div class="lane-label">Name A Tokens</div>
+          <div class="seg-table" id="s2-table-a"></div>
+        </div>
+        <div class="lane lane-b">
+          <div class="lane-label">Name B Tokens</div>
+          <div class="seg-table" id="s2-table-b"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── STEP 3: Expansion Pipeline ── -->
+    <section class="step-section" id="step3-section">
+      <div class="step-header">
+        <div class="step-badge step-badge-3">3</div>
+        <div>
+          <h3 class="step-title">Expansion Pipeline</h3>
+          <p class="step-desc">Dictionary Lookup -> Expand Classifier -> Abbreviation Expander</p>
+        </div>
+        <div class="model-badge">3 Stages</div>
+      </div>
+      <div class="step-content dual-lane">
+        <div class="lane lane-a">
+          <div class="lane-label">Name A Expansion</div>
+          <div class="expand-cards" id="s3-cards-a"></div>
+        </div>
+        <div class="lane lane-b">
+          <div class="lane-label">Name B Expansion</div>
+          <div class="expand-cards" id="s3-cards-b"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── STEP 4: Similarity Score ── -->
+    <section class="step-section" id="step4-section">
+      <div class="step-header">
+        <div class="step-badge step-badge-4">4</div>
+        <div>
+          <h3 class="step-title">Similarity Computation</h3>
+          <p class="step-desc">Sentence embedding cosine similarity with semantic conflict penalties</p>
+        </div>
+        <div class="model-badge">Embedding</div>
+      </div>
+      <div class="step-content">
+        <div class="sim-comparison">
+          <div class="sim-phrase sim-phrase-a">
+            <span class="sim-phrase-label">Expanded A:</span>
+            <span class="sim-phrase-text" id="s4-phrase-a"></span>
+          </div>
+          <div class="sim-vs">
+            <div class="sim-score-circle" id="s4-score-circle">
+              <svg viewBox="0 0 120 120" class="score-ring">
+                <circle cx="60" cy="60" r="54" class="score-ring-bg" />
+                <circle cx="60" cy="60" r="54" class="score-ring-fill" id="score-ring-fill" />
+              </svg>
+              <div class="score-value" id="s4-score-value">--</div>
+              <div class="score-label" id="s4-confidence">--</div>
+            </div>
+          </div>
+          <div class="sim-phrase sim-phrase-b">
+            <span class="sim-phrase-label">Expanded B:</span>
+            <span class="sim-phrase-text" id="s4-phrase-b"></span>
+          </div>
+        </div>
+
+        <!-- Score breakdown -->
+        <div class="score-breakdown" id="score-breakdown">
+          <div class="breakdown-row">
+            <span class="breakdown-label">Base Similarity (cosine)</span>
+            <div class="breakdown-bar-container">
+              <div class="breakdown-bar breakdown-bar-base" id="bar-base"></div>
+            </div>
+            <span class="breakdown-value" id="val-base">--</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-label">Conflict Penalty</span>
+            <div class="breakdown-bar-container">
+              <div class="breakdown-bar breakdown-bar-penalty" id="bar-penalty"></div>
+            </div>
+            <span class="breakdown-value" id="val-penalty">--</span>
+          </div>
+          <div class="breakdown-row breakdown-final">
+            <span class="breakdown-label">Final Score</span>
+            <div class="breakdown-bar-container">
+              <div class="breakdown-bar breakdown-bar-final" id="bar-final"></div>
+            </div>
+            <span class="breakdown-value" id="val-final">--</span>
+          </div>
+        </div>
+
+        <!-- Conflicts -->
+        <div class="conflicts-section" id="conflicts-section" style="display:none">
+          <h4 class="conflicts-title">Semantic Conflicts Detected</h4>
+          <div class="conflicts-list" id="conflicts-list"></div>
+        </div>
+
+        <!-- Runtime -->
+        <div class="runtime-badge" id="runtime-badge"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ═══════════════ DICTIONARY EXPLORER ═══════════════ -->
+  <section class="dict-section">
+    <h2 class="section-title">Dictionary Explorer</h2>
+    <p class="dict-desc">The built-in abbreviation dictionary provides instant lookups for common database column abbreviations</p>
+    <div class="dict-search">
+      <input type="text" id="dict-search" placeholder="Search abbreviations..." oninput="filterDict()">
+    </div>
+    <div class="dict-grid" id="dict-grid"></div>
+  </section>
+
+  <!-- ═══════════════ FOOTER ═══════════════ -->
+  <footer class="footer">
+    <p>Name Similarity Engine - DataMigrationCrane</p>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/nse_app.js') }}"></script>
+</body>
+</html>

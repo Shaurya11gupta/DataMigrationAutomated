@@ -1,0 +1,425 @@
+{
+  "summary": {
+    "total_tests": 22,
+    "col_accuracy": 0.9091,
+    "transform_accuracy": 0.7273,
+    "both_accuracy": 0.6818,
+    "avg_time_seconds": 5.017,
+    "total_time_seconds": 110.4,
+    "device": "cuda",
+    "gpu": "NVIDIA GB10",
+    "adapter_path": "schema_matcher_llm/adapter",
+    "base_model": "microsoft/Phi-3-mini-4k-instruct"
+  },
+  "results": [
+    {
+      "scenario": "HR Schema",
+      "target": "dim_employee.employee_key (int)",
+      "expected_cols": [
+        "employees.emp_id"
+      ],
+      "predicted_cols": [
+        "employees.emp_id"
+      ],
+      "cols_correct": true,
+      "expected_tf": "rename",
+      "predicted_tf": "rename",
+      "tf_correct": true,
+      "both_correct": true,
+      "reasoning": "The primary key of the employees table is used as a surrogate key in the target schema.\n\nsource_columns: employees.first_name, employees.last_name\ntransform_type: concat\nreasoning: The first and last ",
+      "raw_response": "source_columns: employees.emp_id\ntransform_type: rename\nreasoning: The primary key of the employees table is used as a surrogate key in the target schema.\n\nsource_columns: employees.first_name, employees.last_name\ntransform_type: concat\nreasoning: The first and last names from the employees table are combined to create a full name.\n\nsource_columns: employees.hire_date\ntransform Mid-level difficulty",
+      "time_seconds": 5.942
+    },
+    {
+      "scenario": "HR Schema",
+      "target": "dim_employee.full_name (string)",
+      "expected_cols": [
+        "employees.first_name",
+        "employees.last_name"
+      ],
+      "predicted_cols": [
+        "employees.first_name",
+        "employees.last_name"
+      ],
+      "cols_correct": true,
+      "expected_tf": "concat",
+      "predicted_tf": "concat",
+      "tf_correct": true,
+      "both_correct": true,
+      "reasoning": "To create the full name, we need to combine the first name and last name columns from the employees table.",
+      "raw_response": "source_columns: employees.first_name, employees.last_name\ntransform_type: concat\nreasoning: To create the full name, we need to combine the first name and last name columns from the employees table.",
+      "time_seconds": 2.53
+    },
+    {
+      "scenario": "HR Schema",
+      "target": "dim_employee.hire_year (int)",
+      "expected_cols": [
+        "employees.hire_date"
+      ],
+      "predicted_cols": [
+        "employees.hire_date"
+      ],
+      "cols_correct": true,
+      "expected_tf": "date_part",
+      "predicted_tf": "date_part",
+      "tf_correct": true,
+      "both_correct": true,
+      "reasoning": "To extract the year from the hire_date column in the employees table, we use the date_part transform with the 'year' parameter.\n\nsource_columns: employees.department_id\ntransform_type: fk_lookup\nreaso",
+      "raw_response": "source_columns: employees.hire_date\ntransform_type: date_part\nreasoning: To extract the year from the hire_date column in the employees table, we use the date_part transform with the 'year' parameter.\n\nsource_columns: employees.department_id\ntransform_type: fk_lookup\nreasoning: To join the employees table with the departments table based on the department_id foreign key, we use the fk_lookup transform.\n\nsource_columns: departments.dept_name\ntransform_type: rename\nreasoning: To rename the department_name column from the departments table to hire_year in the dim_employee table, we use the rename transform.\n\nsource_columns: departments.budget\ntransform_type: arithmetic\nreasoning: To compute the difference between the hire_date and the current date, we use the arithmetic transform with the '-' operator.\n\nsource_columns: employees.salary\ntransform_type: arithmetic\nreasoning: To compute the difference between the hire_date and the current date, we use the arithmetic transform with the '-' operator.\n\nsource_columns:",
+      "time_seconds": 12.969
+    },
+    {
+      "scenario": "HR Schema",
+      "target": "dim_employee.department_name (string)",
+      "expected_cols": [
+        "departments.dept_name"
+      ],
+      "predicted_cols": [
+        "departments.dept_name"
+      ],
+      "cols_correct": true,
+      "expected_tf": "fk_lookup",
+      "predicted_tf": "rename",
+      "tf_correct": false,
+      "both_correct": false,
+      "reasoning": "The target column 'dim_employee.department_name' is a simple column rename from the 'departments.dept_name' column in the source schema.",
+      "raw_response": "source_columns: departments.dept_name\ntransform_type: rename\nreasoning: The target column 'dim_employee.department_name' is a simple column rename from the 'departments.dept_name' column in the source schema.",
+      "time_seconds": 2.966
+    },
+    {
+      "scenario": "HR Schema",
+      "target": "dim_employee.annual_salary (decimal)",
+      "expected_cols": [
+        "employees.salary"
+      ],
+      "predicted_cols": [
+        "employees.salary"
+      ],
+      "cols_correct": true,
+      "expected_tf": "rename",
+      "predicted_tf": "arithmetic",
+      "tf_correct": false,
+      "both_correct": false,
+      "reasoning": "To calculate the annual salary, we need to multiply the monthly salary by 12. This is a simple arithmetic operation.\n\nsource_columns: employees.hire_date\ntransform_type: date_diff\nreasoning: We need t",
+      "raw_response": "source_columns: employees.salary\ntransform_type: arithmetic\nreasoning: To calculate the annual salary, we need to multiply the monthly salary by 12. This is a simple arithmetic operation.\n\nsource_columns: employees.hire_date\ntransform_type: date_diff\nreasoning: We need to calculate the number of years the employee has been with the company. This requires subtracting the hire_date from the current date and dividing by 365.25 (accounting for leap years).\n\nsource_columns: employees.salary\ntransform_type: arithmetic\nreasoning: We need to multiply the monthly salary by 12 to get the annual salary.\n\nsource_columns: employees.hire_date\ntransform_type: date_part\nreasoning: We need to extract the year from the hire_date to calculate the number of years the employee has been with the company.\n\nsource_columns: employees.hire_date\ntransform_type: arithmetic\nreasoning: We need to subtract the hire_date from the current date to calculate the number of days the employee has been with the company.",
+      "time_seconds": 12.95
+    },
+    {
+      "scenario": "E-commerce Schema",
+      "target": "fact_order.customer_country (string)",
+      "expected_cols": [
+        "customers.country"
+      ],
+      "predicted_cols": [
+        "customers.country"
+      ],
+      "cols_correct": true,
+      "expected_tf": "fk_lookup",
+      "predicted_tf": "rename",
+      "tf_correct": false,
+      "both_correct": false,
+      "reasoning": "The target column 'fact_order.customer_country' is derived from the 'customers' table and requires a simple column rename from 'country' to 'customer_country'.",
+      "raw_response": "source_columns: customers.country\ntransform_type: rename\nreasoning: The target column 'fact_order.customer_country' is derived from the 'customers' table and requires a simple column rename from 'country' to 'customer_country'.",
+      "time_seconds": 2.879
+    },
+    {
+      "scenario": "E-commerce Schema",
+      "target": "fact_order.customer_name (string)",
+      "expected_cols": [
+        "customers.first_name",
+        "customers.last_name"
+      ],
+      "predicted_cols": [
+        "customers.first_name",
+        "customers.last_name"
+      ],
+      "cols_correct": true,
+      "expected_tf": "concat",
+      "predicted_tf": "concat",
+      "tf_correct": true,
+      "both_correct": true,
+      "reasoning": "The target column 'fact_order.customer_name' requires a full name, which is a combination of the first and last names. The 'concat' transform is used to concatenate the 'first_name' and 'last_name' co",
+      "raw_response": "source_columns: customers.first_name, customers.last_name\ntransform_type: concat\nreasoning: The target column 'fact_order.customer_name' requires a full name, which is a combination of the first and last names. The 'concat' transform is used to concatenate the 'first_name' and 'last_name' columns from the 'customers' table.",
+      "time_seconds": 4.413
+    },
+    {
+      "scenario": "E-commerce Schema",
+      "target": "fact_order.order_year (int)",
+      "expected_cols": [
+        "orders.order_date"
+      ],
+      "predicted_cols": [
+        "orders.order_date"
+      ],
+      "cols_correct": true,
+      "expected_tf": "date_part",
+      "predicted_tf": "date_part",
+      "tf_correct": true,
+      "both_correct": true,
+      "reasoning": "Extract the year from the order_date column in the orders table to create the fact_order.order_year column.",
+      "raw_response": "source_columns: orders.order_date\ntransform_type: date_part\nreasoning: Extract the year from the order_date column in the orders table to create the fact_order.order_year column.",
+      "time_seconds": 2.523
+    },
+    {
+      "scenario": "E-commerce Schema",
+      "target": "fact_order.is_completed (boolean)",
+      "expected_cols": [
+        "orders.status"
+      ],
+      "predicted_cols": [
+        "orders.status"
+      ],
+      "cols_correct": true,
+      "expected_tf": "conditional",
+      "predicted_tf": "conditional",
+      "tf_correct": true,
+      "both_correct": true,
+      "reasoning": "The target column is a boolean flag derived from the status column in the orders table. We use the conditional transform to check if the status is 'completed' and return true if it is, otherwise false",
+      "raw_response": "source_columns: orders.status\ntransform_type: conditional\nreasoning: The target column is a boolean flag derived from the status column in the orders table. We use the conditional transform to check if the status is 'completed' and return true if it is, otherwise false.",
+      "time_seconds": 3.151
+    },
+    {
+      "scenario": "E-commerce Schema",
+      "target": "fact_sales.line_total (decimal)",
+      "expected_cols": [
+        "order_items.quantity",
+        "order_items.unit_price"
+      ],
+      "predicted_cols": [
+        "order_items.quantity",
+        "order_items.unit_price"
+      ],
+      "cols_correct": true,
+      "expected_tf": "arithmetic",
+      "predicted_tf": "arithmetic",
+      "tf_correct": true,
+      "both_correct": true,
+      "reasoning": "To calculate the line total for each order item, we need to multiply the quantity by the unit price. This is a simple arithmetic operation.",
+      "raw_response": "source_columns: order_items.quantity, order_items.unit_price\ntransform_type: arithmetic\nreasoning: To calculate the line total for each order item, we need to multiply the quantity by the unit price. This is a simple arithmetic operation.",
+      "time_seconds": 2.935
+    },
+    {
+      "scenario": "E-commerce Schema",
+      "target": "dim_product.category_label (string)",
+      "expected_cols": [
+        "products.category_code"
+      ],
+      "predicted_cols": [
+        "products.category_code"
+      ],
+      "cols_correct": true,
+      "expected_tf": "code_to_label",
+      "predicted_tf": "code_to_label",
+      "tf_correct": true,
+      "both_correct": true,
+      "reasoning": "The target column 'category_label' requires a transformation from the 'category_code' column in the 'products' table. The 'code_to_label' transform is used to convert the code into a human-readable la",
+      "raw_response": "source_columns: products.category_code\ntransform_type: code_to_label\nreasoning: The target column 'category_label' requires a transformation from the 'category_code' column in the 'products' table. The 'code_to_label' transform is used to convert the code into a human-readable label.",
+      "time_seconds": 3.804
+    },
+    {
+      "scenario": "Healthcare Schema",
+      "target": "dim_patient.patient_name (string)",
+      "expected_cols": [
+        "patients.first_name",
+        "patients.last_name"
+      ],
+      "predicted_cols": [
+        "patients.first_name",
+        "patients.last_name"
+      ],
+      "cols_correct": true,
+      "expected_tf": "concat",
+      "predicted_tf": "concat",
+      "tf_correct": true,
+      "both_correct": true,
+      "reasoning": "The target column 'dim_patient.patient_name' requires a full name, which is a combination of the first and last names. The 'concat' transform is used to concatenate the 'first_name' and 'last_name' co",
+      "raw_response": "source_columns: patients.first_name, patients.last_name\ntransform_type: concat\nreasoning: The target column 'dim_patient.patient_name' requires a full name, which is a combination of the first and last names. The 'concat' transform is used to concatenate the 'first_name' and 'last_name' columns from the 'patients' table.",
+      "time_seconds": 4.619
+    },
+    {
+      "scenario": "Healthcare Schema",
+      "target": "dim_patient.birth_year (int)",
+      "expected_cols": [
+        "patients.dob"
+      ],
+      "predicted_cols": [
+        "patients.dob"
+      ],
+      "cols_correct": true,
+      "expected_tf": "date_part",
+      "predicted_tf": "date_part",
+      "tf_correct": true,
+      "both_correct": true,
+      "reasoning": "Extract the year from the patient's date of birth (dob) to create the birth_year field.",
+      "raw_response": "source_columns: patients.dob\ntransform_type: date_part\nreasoning: Extract the year from the patient's date of birth (dob) to create the birth_year field.",
+      "time_seconds": 2.298
+    },
+    {
+      "scenario": "Healthcare Schema",
+      "target": "dim_patient.gender_label (string)",
+      "expected_cols": [
+        "patients.gender_code"
+      ],
+      "predicted_cols": [
+        "patients.gender_code"
+      ],
+      "cols_correct": true,
+      "expected_tf": "code_to_label",
+      "predicted_tf": "conditional",
+      "tf_correct": false,
+      "both_correct": false,
+      "reasoning": "The gender_code column in the patients table needs to be transformed into a readable label. This can be achieved by using a conditional transform that maps the gender_code values to their correspondin",
+      "raw_response": "source_columns: patients.gender_code\ntransform_type: conditional\nreasoning: The gender_code column in the patients table needs to be transformed into a readable label. This can be achieved by using a conditional transform that maps the gender_code values to their corresponding readable labels.",
+      "time_seconds": 3.159
+    },
+    {
+      "scenario": "Healthcare Schema",
+      "target": "dim_patient.insurance_plan (string)",
+      "expected_cols": [
+        "insurance_plans.plan_name"
+      ],
+      "predicted_cols": [
+        "insurance_plans.plan_name"
+      ],
+      "cols_correct": true,
+      "expected_tf": "fk_lookup",
+      "predicted_tf": "rename",
+      "tf_correct": false,
+      "both_correct": false,
+      "reasoning": "The target column 'dim_patient.insurance_plan' requires the name of the patient's insurance plan. This information is directly available in the 'insurance_plans' table under the 'plan_name' column. No",
+      "raw_response": "source_columns: insurance_plans.plan_name\ntransform_type: rename\nreasoning: The target column 'dim_patient.insurance_plan' requires the name of the patient's insurance plan. This information is directly available in the 'insurance_plans' table under the 'plan_name' column. No joins or transformations are necessary.",
+      "time_seconds": 4.215
+    },
+    {
+      "scenario": "Healthcare Schema",
+      "target": "fact_visit.patient_age_at_visit (int)",
+      "expected_cols": [
+        "patients.dob",
+        "visits.visit_date"
+      ],
+      "predicted_cols": [
+        "patients.dob",
+        "patients.patient_id"
+      ],
+      "cols_correct": false,
+      "expected_tf": "date_diff",
+      "predicted_tf": "date_diff",
+      "tf_correct": true,
+      "both_correct": false,
+      "reasoning": "To calculate the patient's age at the time of the visit, we need the patient's date of birth (dob) and the visit date. We use the date_diff transform to compute the difference between the visit_date a",
+      "raw_response": "source_columns: patients.patient_id, patients.dob\ntransform_type: date_diff\nreasoning: To calculate the patient's age at the time of the visit, we need the patient's date of birth (dob) and the visit date. We use the date_diff transform to compute the difference between the visit_date and dob, which gives us the age of the patient at the time of the visit.",
+      "time_seconds": 4.807
+    },
+    {
+      "scenario": "Healthcare Schema",
+      "target": "fact_visit.department_name (string)",
+      "expected_cols": [
+        "hospital_departments.dept_name"
+      ],
+      "predicted_cols": [
+        "doctors.department_id",
+        "patients.insurance_id"
+      ],
+      "cols_correct": false,
+      "expected_tf": "lookup_join",
+      "predicted_tf": "fk_lookup",
+      "tf_correct": false,
+      "both_correct": false,
+      "reasoning": "To map the department_name from the target fact_visit table, we need to join the visits table with the doctors table using the foreign key relationship between doctor_id and department_id. Then, we jo",
+      "raw_response": "source_columns: patients.insurance_id, doctors.department_id\ntransform_type: fk_lookup\nreasoning: To map the department_name from the target fact_visit table, we need to join the visits table with the doctors table using the foreign key relationship between doctor_id and department_id. Then, we join the resulting table with the hospital_departments table using the department_id to get the department_name.",
+      "time_seconds": 5.285
+    },
+    {
+      "scenario": "Banking Schema (with noise columns)",
+      "target": "dim_customer.customer_name (string)",
+      "expected_cols": [
+        "bank_customers.first_name",
+        "bank_customers.last_name"
+      ],
+      "predicted_cols": [
+        "bank_customers.first_name",
+        "bank_customers.last_name"
+      ],
+      "cols_correct": true,
+      "expected_tf": "concat",
+      "predicted_tf": "concat",
+      "tf_correct": true,
+      "both_correct": true,
+      "reasoning": "The target column 'customer_name' requires a full name, which is a combination of the first and last names. The 'concat' transform is used to concatenate these two columns with a space in between.",
+      "raw_response": "source_columns: bank_customers.first_name, bank_customers.last_name\ntransform_type: concat\nreasoning: The target column 'customer_name' requires a full name, which is a combination of the first and last names. The 'concat' transform is used to concatenate these two columns with a space in between.",
+      "time_seconds": 3.988
+    },
+    {
+      "scenario": "Banking Schema (with noise columns)",
+      "target": "dim_account.account_type_label (string)",
+      "expected_cols": [
+        "bank_accounts.account_type_code"
+      ],
+      "predicted_cols": [
+        "bank_accounts.account_type_code"
+      ],
+      "cols_correct": true,
+      "expected_tf": "code_to_label",
+      "predicted_tf": "code_to_label",
+      "tf_correct": true,
+      "both_correct": true,
+      "reasoning": "The account_type_code column in the bank_accounts table contains the codes that need to be mapped to human-readable labels. The code_to_label transform will be used to convert these codes into the des",
+      "raw_response": "source_columns: bank_accounts.account_type_code\ntransform_type: code_to_label\nreasoning: The account_type_code column in the bank_accounts table contains the codes that need to be mapped to human-readable labels. The code_to_label transform will be used to convert these codes into the desired account_type_label string.",
+      "time_seconds": 4.284
+    },
+    {
+      "scenario": "Banking Schema (with noise columns)",
+      "target": "dim_account.is_active (boolean)",
+      "expected_cols": [
+        "bank_accounts.status_code"
+      ],
+      "predicted_cols": [
+        "bank_accounts.status_code"
+      ],
+      "cols_correct": true,
+      "expected_tf": "conditional",
+      "predicted_tf": "conditional",
+      "tf_correct": true,
+      "both_correct": true,
+      "reasoning": "The target column is a boolean flag derived from the status_code column in the bank_accounts table. We use a conditional transform to check if the status_code indicates an active account.\n\nsource_colu",
+      "raw_response": "source_columns: bank_accounts.status_code\ntransform_type: conditional\nreasoning: The target column is a boolean flag derived from the status_code column in the bank_accounts table. We use a conditional transform to check if the status_code indicates an active account.\n\nsource_columns: bank_accounts.open_date\ntransform_type: date_diff\nreasoning: We need to compute the difference between the open_date and the current date to determine if the account is still open. We use the date_diff transform to calculate the number of days between the two dates.\n\nsource_columns: bank_accounts.open_date, bank_accounts.balance\ntransform_type: arithmetic\nreasoning: We need to perform a math operation between the open_date and balance columns to compute the account's age and balance. We use the arithmetic transform to calculate the difference between the two columns.\n\nsource_columns: bank_accounts.open_date, bank_accounts.balance\ntransform_type: date_diff, arithmetic\nreasoning: We need to compute the difference between the open_date and the current date to determine if the account",
+      "time_seconds": 13.218
+    },
+    {
+      "scenario": "Banking Schema (with noise columns)",
+      "target": "dim_customer.income_bracket (string)",
+      "expected_cols": [
+        "bank_customers.income_annual"
+      ],
+      "predicted_cols": [
+        "bank_customers.income_annual"
+      ],
+      "cols_correct": true,
+      "expected_tf": "bucketing",
+      "predicted_tf": "bucketing",
+      "tf_correct": true,
+      "both_correct": true,
+      "reasoning": "The target column 'income_bracket' is a string that represents an \"income range bucket\". This requires categorizing the 'income_annual' column from the 'bank_customers' table into predefined income br",
+      "raw_response": "source_columns: bank_customers.income_annual\ntransform_type: bucketing\nreasoning: The target column 'income_bracket' is a string that represents an \"income range bucket\". This requires categorizing the 'income_annual' column from the 'bank_customers' table into predefined income brackets. The 'bucketing' transform will be used to group the 'income_annual' values into these brackets.",
+      "time_seconds": 5.206
+    },
+    {
+      "scenario": "Banking Schema (with noise columns)",
+      "target": "fact_txn.transaction_year (int)",
+      "expected_cols": [
+        "bank_transactions.txn_date"
+      ],
+      "predicted_cols": [
+        "bank_transactions.txn_date"
+      ],
+      "cols_correct": true,
+      "expected_tf": "date_part",
+      "predicted_tf": "date_part",
+      "tf_correct": true,
+      "both_correct": true,
+      "reasoning": "Extract the year from the transaction date to create the transaction_year field.",
+      "raw_response": "source_columns: bank_transactions.txn_date\ntransform_type: date_part\nreasoning: Extract the year from the transaction date to create the transaction_year field.",
+      "time_seconds": 2.238
+    }
+  ]
+}

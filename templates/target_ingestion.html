@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+{% set active_page = "target_ingest" %}
+{% set step = 3 %}
+
+{% block title %}Target Schema Ingestion – DataMigrationCrane{% endblock %}
+
+{% block content %}
+<div class="page-header fade-in">
+  <h1 class="page-title">Target Schema Ingestion</h1>
+  <p class="page-subtitle">Define your target tables and columns. The system will map source columns and discover join paths (candidate selection).</p>
+</div>
+
+<div id="alert-area"></div>
+
+<!-- Source tables reference -->
+<div class="card mb-1 fade-in delay-1" style="max-width:700px">
+  <div class="card-header">
+    <span class="card-title">Loaded Source Schema</span>
+  </div>
+  <div id="source-ref" style="display:flex;flex-wrap:wrap;gap:.5rem;"></div>
+</div>
+
+<!-- Tabs -->
+<div id="input-tabs">
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="tab-json-target">JSON Editor</button>
+    <button class="tab-btn" data-tab="tab-form-target">Visual Builder</button>
+  </div>
+
+  <!-- JSON Editor -->
+  <div id="tab-json-target" class="tab-panel active fade-in">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Target Schema JSON</span>
+        <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
+          <button class="btn btn-sm btn-secondary" onclick="loadTargetExample()">Load 2-Table</button>
+          <button class="btn btn-sm btn-secondary" onclick="loadTargetExample5Tables()">Load 5-Table</button>
+        </div>
+      </div>
+      <textarea id="target-json-editor" class="json-editor" spellcheck="false" placeholder='{ "tables": [ ... ] }'></textarea>
+      <p class="form-hint mt-1">Define target tables with columns (name, type, description). Each column will be mapped to source column candidates.</p>
+    </div>
+  </div>
+
+  <!-- Visual Builder -->
+  <div id="tab-form-target" class="tab-panel fade-in">
+    <div id="target-tables-container"></div>
+    <button class="btn btn-secondary mt-1" onclick="addTargetTableForm()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Target Table
+    </button>
+  </div>
+</div>
+
+<div style="margin-top:1.5rem; display:flex; gap:1rem; align-items:center;">
+  <button class="btn btn-success btn-lg" id="map-btn" onclick="mapSourceToTarget()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+    Map Source to Target
+  </button>
+  <span id="status-text" class="text-dim text-sm"></span>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const sourceTables = {{ source_tables | safe }};
+
+  /* Show source table chips */
+  const refEl = document.getElementById('source-ref');
+  refEl.innerHTML = sourceTables.map(t => `
+    <span style="padding:.35rem .75rem; background:var(--bg-card2); border-radius:6px; font-size:.82rem; font-weight:500;">
+      ${t.name} <span class="text-muted">(${t.col_count} cols)</span>
+    </span>
+  `).join('');
+
+  initTabs(document.getElementById('input-tabs'));
+
+  const TARGET_EXAMPLE = {
+    "tables": [
+      {
+        "name": "dim_employee",
+        "columns": [
+          {"name": "employee_key", "type": "int", "description": "surrogate key for employee dimension"},
+          {"name": "full_name", "type": "string", "description": "employee full name combining first and last"},
+          {"name": "email_address", "type": "string", "description": "employee email"},
+          {"name": "hire_year", "type": "int", "description": "year the employee was hired"},
+          {"name": "department_name", "type": "string", "description": "name of the department the employee belongs to"},
+          {"name": "annual_salary", "type": "decimal", "description": "employee yearly salary"},
+          {"name": "name_email_combined", "type": "string", "description": "formatted as name <email>"}
+        ]
+      },
+      {
+        "name": "dim_project",
+        "columns": [
+          {"name": "project_key", "type": "int", "description": "surrogate key"},
+          {"name": "project_title", "type": "string", "description": "project name"},
+          {"name": "start_year", "type": "int", "description": "year the project started"},
+          {"name": "lead_name", "type": "string", "description": "full name of the project lead"},
+          {"name": "owning_department", "type": "string", "description": "department name that owns the project"}
+        ]
+      }
+    ]
+  };
+
+  const TARGET_EXAMPLE_5_TABLES = {
+    "tables": [
+      {
+        "name": "dim_employee",
+        "columns": [
+          {"name": "employee_key", "type": "int", "description": "surrogate key for employee"},
+          {"name": "full_name", "type": "string", "description": "employee full name combining first and last"},
+          {"name": "email_address", "type": "string", "description": "employee email"},
+          {"name": "hire_year", "type": "int", "description": "year the employee was hired"},
+          {"name": "department_name", "type": "string", "description": "name of the department"},
+          {"name": "annual_salary", "type": "decimal", "description": "employee yearly salary"}
+        ]
+      },
+      {
+        "name": "dim_department",
+        "columns": [
+          {"name": "dept_key", "type": "int", "description": "surrogate key for department"},
+          {"name": "dept_name", "type": "string", "description": "department name"},
+          {"name": "location_name", "type": "string", "description": "department location"}
+        ]
+      },
+      {
+        "name": "dim_project",
+        "columns": [
+          {"name": "project_key", "type": "int", "description": "surrogate key"},
+          {"name": "project_title", "type": "string", "description": "project name"},
+          {"name": "start_year", "type": "int", "description": "year the project started"},
+          {"name": "lead_name", "type": "string", "description": "full name of the project lead"},
+          {"name": "owning_department", "type": "string", "description": "department that owns the project"}
+        ]
+      },
+      {
+        "name": "dim_customer",
+        "columns": [
+          {"name": "customer_key", "type": "int", "description": "surrogate key for customer"},
+          {"name": "customer_name", "type": "string", "description": "full name of customer"},
+          {"name": "email", "type": "string", "description": "customer email"},
+          {"name": "region_label", "type": "string", "description": "human-readable region name"}
+        ]
+      },
+      {
+        "name": "fact_order",
+        "columns": [
+          {"name": "order_key", "type": "int", "description": "order identifier"},
+          {"name": "customer_name", "type": "string", "description": "name of the customer who placed the order"},
+          {"name": "order_year", "type": "int", "description": "year the order was placed"},
+          {"name": "total_amount", "type": "decimal", "description": "total amount calculated from qty column multiplied by amount column"},
+          {"name": "is_completed", "type": "boolean", "description": "whether order status is completed"}
+        ]
+      }
+    ]
+  };
+
+  function loadTargetExample() {
+    document.getElementById('target-json-editor').value = JSON.stringify(TARGET_EXAMPLE, null, 2);
+  }
+
+  function loadTargetExample5Tables() {
+    document.getElementById('target-json-editor').value = JSON.stringify(TARGET_EXAMPLE_5_TABLES, null, 2);
+  }
+  loadTargetExample();
+
+  /* ---- Visual Builder ---- */
+  let ttCount = 0;
+  function addTargetTableForm(data) {
+    ttCount++;
+    const tid = 'tt-' + ttCount;
+    const container = document.getElementById('target-tables-container');
+    const div = document.createElement('div');
+    div.className = 'card mb-1 fade-in';
+    div.id = tid;
+    div.innerHTML = `
+      <div class="card-header">
+        <input class="form-input" style="max-width:250px" placeholder="Target table name" value="${data?.name || ''}" data-role="table-name">
+        <button class="btn btn-sm btn-secondary" onclick="document.getElementById('${tid}').remove()">Remove</button>
+      </div>
+      <div data-role="columns"></div>
+      <button class="btn btn-sm btn-secondary mt-1" onclick="addTargetColRow('${tid}')">+ Add Column</button>
+    `;
+    container.appendChild(div);
+    if (data?.columns) data.columns.forEach(c => addTargetColRow(tid, c));
+    else { addTargetColRow(tid); addTargetColRow(tid); }
+  }
+
+  function addTargetColRow(tid, data) {
+    const container = document.querySelector(`#${tid} [data-role="columns"]`);
+    const row = document.createElement('div');
+    row.style.cssText = 'display:grid; grid-template-columns:1fr 100px 1fr 36px; gap:.5rem; align-items:center; margin-bottom:.4rem;';
+    row.innerHTML = `
+      <input class="form-input" placeholder="Column name" value="${data?.name || ''}" data-role="col-name">
+      <select class="form-input" data-role="col-type">
+        <option value="string" ${data?.type === 'string' ? 'selected' : ''}>string</option>
+        <option value="int" ${data?.type === 'int' ? 'selected' : ''}>int</option>
+        <option value="decimal" ${data?.type === 'decimal' ? 'selected' : ''}>decimal</option>
+        <option value="date" ${data?.type === 'date' ? 'selected' : ''}>date</option>
+        <option value="boolean" ${data?.type === 'boolean' ? 'selected' : ''}>boolean</option>
+      </select>
+      <input class="form-input" placeholder="Description (optional)" value="${data?.description || ''}" data-role="col-desc">
+      <button class="btn-icon btn-secondary" onclick="this.parentElement.remove()" title="Remove">&times;</button>
+    `;
+    container.appendChild(row);
+  }
+
+  function targetFormToJson() {
+    const tables = [];
+    document.querySelectorAll('#target-tables-container > .card').forEach(card => {
+      const tname = card.querySelector('[data-role="table-name"]').value.trim();
+      if (!tname) return;
+      const cols = [];
+      card.querySelectorAll('[data-role="columns"] > div').forEach(row => {
+        const name = row.querySelector('[data-role="col-name"]').value.trim();
+        if (!name) return;
+        cols.push({
+          name,
+          type: row.querySelector('[data-role="col-type"]').value,
+          description: row.querySelector('[data-role="col-desc"]')?.value || '',
+        });
+      });
+      tables.push({ name: tname, columns: cols });
+    });
+    return { tables };
+  }
+
+  /* ---- Map Source to Target ---- */
+  async function mapSourceToTarget() {
+    const activeTab = document.querySelector('.tab-btn.active')?.dataset.tab;
+    let payload;
+    if (activeTab === 'tab-json-target') {
+      const raw = document.getElementById('target-json-editor').value.trim();
+      if (!raw) { showAlert('Please enter target JSON.', 'error'); return; }
+      try { payload = JSON.parse(raw); } catch(e) { showAlert('Invalid JSON: ' + e.message, 'error'); return; }
+    } else {
+      payload = targetFormToJson();
+    }
+    if (!payload.tables || !payload.tables.length) {
+      showAlert('At least one target table required.', 'error'); return;
+    }
+
+    showLoading('Running candidate selection...\nschema_matcher_llm1 on CPU');
+    document.getElementById('map-btn').disabled = true;
+
+    try {
+      const result = await apiPost('/api/target/map', payload);
+      if (result.error) {
+        hideLoading();
+        showAlert('Error: ' + result.error, 'error');
+      } else {
+        document.getElementById('status-text').textContent =
+          `${result.stats.mapped_columns}/${result.stats.total_columns} columns mapped in ${result.stats.total_time}s`;
+        window.location.href = result.redirect;
+      }
+    } catch(e) {
+      hideLoading();
+      showAlert('Network error: ' + e.message, 'error');
+    }
+    document.getElementById('map-btn').disabled = false;
+  }
+
+  function showAlert(msg, type) {
+    const area = document.getElementById('alert-area');
+    area.innerHTML = `<div class="alert alert-${type} fade-in">${msg}</div>`;
+    setTimeout(() => area.innerHTML = '', 5000);
+  }
+</script>
+{% endblock %}

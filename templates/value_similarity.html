@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Value Similarity Engine - Pipeline Visualizer</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/vse_style.css') }}">
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <h1 class="hero-title">Value Similarity Engine</h1>
+      <p class="hero-subtitle">Statistical Column Comparison Pipeline</p>
+      <p class="hero-desc">Compare two columns of data through normalization, type detection, profiling, and 10+ statistical signals</p>
+    </div>
+  </header>
+
+  <!-- ARCHITECTURE -->
+  <section class="arch-section">
+    <h2 class="section-title">Pipeline Architecture</h2>
+    <div class="arch-flow">
+      <div class="arch-node an-input" id="an-input"><div class="arch-icon">IN</div><div class="arch-label">Raw Values</div><div class="arch-detail">Two columns of data</div></div>
+      <div class="arch-arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+      <div class="arch-node an-norm" id="an-norm"><div class="arch-icon">NRM</div><div class="arch-label">Normalize</div><div class="arch-detail">Null detection + type coercion</div></div>
+      <div class="arch-arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+      <div class="arch-node an-type" id="an-type"><div class="arch-icon">TYP</div><div class="arch-label">Type Detect</div><div class="arch-detail">Numeric vs Categorical</div></div>
+      <div class="arch-arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+      <div class="arch-node an-prof" id="an-prof"><div class="arch-icon">PRF</div><div class="arch-label">Column Profile</div><div class="arch-detail">Stats, MCV, histogram</div></div>
+      <div class="arch-arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+      <div class="arch-node an-sig" id="an-sig"><div class="arch-icon">SIG</div><div class="arch-label">Signal Compute</div><div class="arch-detail">10+ comparison signals</div></div>
+      <div class="arch-arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+      <div class="arch-node an-score" id="an-score"><div class="arch-icon">SCR</div><div class="arch-label">Weighted Score</div><div class="arch-detail">Final similarity</div></div>
+    </div>
+    <!-- Signal branches -->
+    <div class="signal-branches">
+      <div class="branch branch-cat">
+        <h4>Categorical Signals</h4>
+        <div class="branch-items">
+          <span>MCV Cosine</span><span>Weighted Jaccard</span><span>Set Containment</span><span>Set Jaccard</span>
+          <span>Distinct Count</span><span>Null Compat.</span><span>Entropy</span><span>Length Profile</span>
+        </div>
+      </div>
+      <div class="branch branch-num">
+        <h4>Numeric Signals</h4>
+        <div class="branch-items">
+          <span>Histogram Intersection</span><span>CDF Similarity</span><span>Exact Overlap</span><span>Range Containment</span>
+          <span>Distinct Count</span><span>Null Compat.</span><span>Integer Ratio</span><span>Monotonicity</span>
+          <span>Outlier Ratio</span><span>Scale Match</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INPUT -->
+  <section class="input-section">
+    <h2 class="section-title">Try It Live</h2>
+    <div class="input-panel">
+      <div class="col-input">
+        <label>Column A Name</label>
+        <input type="text" id="name-a" placeholder="e.g. salary" autocomplete="off">
+        <label>Column A Values <span class="hint">(one per line or comma-separated)</span></label>
+        <textarea id="values-a" rows="6" placeholder="55000&#10;62000&#10;48000&#10;71000"></textarea>
+      </div>
+      <div class="vs-badge">VS</div>
+      <div class="col-input">
+        <label>Column B Name</label>
+        <input type="text" id="name-b" placeholder="e.g. annual_pay" autocomplete="off">
+        <label>Column B Values <span class="hint">(one per line or comma-separated)</span></label>
+        <textarea id="values-b" rows="6" placeholder="54500&#10;61800&#10;47500&#10;70800"></textarea>
+      </div>
+    </div>
+    <!-- Quick Examples (click to auto-run) -->
+    <div class="examples-bar">
+      <span class="examples-label">Quick examples:</span>
+      <div class="examples-chips" id="example-chips"></div>
+    </div>
+    <div class="input-actions">
+      <button id="btn-compare" class="btn-primary" onclick="runCompare()">
+        <span class="btn-text">Compare Columns</span>
+        <span class="btn-spinner" style="display:none"></span>
+      </button>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <div id="results-container" style="display:none">
+
+    <!-- Score overview -->
+    <section class="result-section" id="score-section">
+      <div class="score-hero">
+        <div class="score-circle-wrap">
+          <svg viewBox="0 0 140 140" class="score-ring-svg">
+            <circle cx="70" cy="70" r="62" class="ring-bg" />
+            <circle cx="70" cy="70" r="62" class="ring-fill" id="ring-fill" />
+          </svg>
+          <div class="score-number" id="score-number">--</div>
+          <div class="score-sub" id="score-sub">similarity</div>
+        </div>
+        <div class="score-meta">
+          <div class="meta-row"><span class="meta-label">Detected Type</span><span class="meta-value" id="meta-type">--</span></div>
+          <div class="meta-row"><span class="meta-label">Type Match</span><span class="meta-value" id="meta-match">--</span></div>
+          <div class="meta-row"><span class="meta-label">Runtime</span><span class="meta-value" id="meta-runtime">--</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Profiles -->
+    <section class="result-section" id="profiles-section">
+      <h3 class="result-title">Column Profiles</h3>
+      <div class="profiles-grid">
+        <div class="profile-card" id="profile-card-a"></div>
+        <div class="profile-card" id="profile-card-b"></div>
+      </div>
+    </section>
+
+    <!-- Signals breakdown -->
+    <section class="result-section" id="signals-section">
+      <h3 class="result-title">Signal Breakdown</h3>
+      <p class="result-desc">Each signal measures a specific aspect of column similarity. The final score is a weighted combination.</p>
+      <div class="signals-table" id="signals-table"></div>
+    </section>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer"><p>Value Similarity Engine - DataMigrationCrane</p></footer>
+
+  <script src="{{ url_for('static', filename='js/vse_app.js') }}"></script>
+</body>
+</html>

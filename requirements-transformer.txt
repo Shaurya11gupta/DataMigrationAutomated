@@ -1,0 +1,5 @@
+# Dependencies for training the Transformer-based transformation classifier
+# Install with: pip install -r requirements-transformer.txt
+
+torch>=2.0.0
+transformers>=4.30.0

@@ -1,0 +1,322 @@
+{% extends "base.html" %}
+{% set active_page = "source_ingest" %}
+{% set step = 1 %}
+
+{% block title %}Source Data Ingestion – DataMigrationCrane{% endblock %}
+
+{% block content %}
+<div class="page-header fade-in">
+  <h1 class="page-title">Source Schema Ingestion</h1>
+  <p class="page-subtitle">Define your source database tables, columns, and optional sample data. The system will discover join relationships automatically.</p>
+</div>
+
+<div id="alert-area"></div>
+
+<!-- Tabs: Form Builder vs JSON Editor -->
+<div id="input-tabs">
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="tab-json">JSON Editor</button>
+    <button class="tab-btn" data-tab="tab-form">Visual Builder</button>
+  </div>
+
+  <!-- JSON Editor Tab -->
+  <div id="tab-json" class="tab-panel active fade-in">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Source Schema JSON</span>
+        <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
+          <button class="btn btn-sm btn-secondary" onclick="loadExample()">Load 3-Table</button>
+          <button class="btn btn-sm btn-secondary" onclick="loadExample5Tables()">Load 5-Table</button>
+        </div>
+      </div>
+      <textarea id="json-editor" class="json-editor" spellcheck="false" placeholder='{ "tables": [ ... ] }'></textarea>
+      <p class="form-hint mt-1">Define tables with columns (name, type, nullable, is_pk, is_fk) and optional sample_data rows.</p>
+    </div>
+  </div>
+
+  <!-- Visual Builder Tab -->
+  <div id="tab-form" class="tab-panel fade-in">
+    <div id="tables-container"></div>
+    <button class="btn btn-secondary mt-1" onclick="addTableForm()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Table
+    </button>
+  </div>
+</div>
+
+<div style="margin-top:1.5rem; display:flex; gap:1rem; align-items:center;">
+  <button class="btn btn-primary btn-lg" id="submit-btn" onclick="submitSource()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
+    Submit &amp; Discover Joins
+  </button>
+  <span id="status-text" class="text-dim text-sm"></span>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Initialize tabs
+  initTabs(document.getElementById('input-tabs'));
+
+  const EXAMPLE = {
+    "tables": [
+      {
+        "name": "employees",
+        "columns": [
+          {"name": "emp_id", "type": "int", "nullable": false, "is_pk": true, "is_fk": false},
+          {"name": "first_name", "type": "string", "nullable": false, "is_pk": false, "is_fk": false},
+          {"name": "last_name", "type": "string", "nullable": false, "is_pk": false, "is_fk": false},
+          {"name": "email", "type": "string", "nullable": true, "is_pk": false, "is_fk": false},
+          {"name": "hire_date", "type": "date", "nullable": false, "is_pk": false, "is_fk": false},
+          {"name": "salary", "type": "decimal", "nullable": true, "is_pk": false, "is_fk": false},
+          {"name": "department_id", "type": "int", "nullable": true, "is_pk": false, "is_fk": true},
+          {"name": "manager_id", "type": "int", "nullable": true, "is_pk": false, "is_fk": true}
+        ],
+        "sample_data": [
+          {"emp_id": 1, "first_name": "Alice", "last_name": "Smith", "email": "alice.smith@corp.com", "hire_date": "2020-01-15", "salary": 85000, "department_id": 10, "manager_id": null},
+          {"emp_id": 2, "first_name": "Bob", "last_name": "Johnson", "email": "bob.j@corp.com", "hire_date": "2021-03-22", "salary": 72000, "department_id": 20, "manager_id": 1},
+          {"emp_id": 3, "first_name": "Carol", "last_name": "Williams", "email": "carol.w@corp.com", "hire_date": "2019-07-10", "salary": 95000, "department_id": 10, "manager_id": 1},
+          {"emp_id": 4, "first_name": "David", "last_name": "Brown", "email": "david.b@corp.com", "hire_date": "2022-11-05", "salary": 68000, "department_id": 30, "manager_id": 2}
+        ]
+      },
+      {
+        "name": "departments",
+        "columns": [
+          {"name": "dept_id", "type": "int", "nullable": false, "is_pk": true, "is_fk": false},
+          {"name": "dept_name", "type": "string", "nullable": false, "is_pk": false, "is_fk": false},
+          {"name": "location", "type": "string", "nullable": true, "is_pk": false, "is_fk": false},
+          {"name": "budget", "type": "decimal", "nullable": true, "is_pk": false, "is_fk": false}
+        ],
+        "sample_data": [
+          {"dept_id": 10, "dept_name": "Engineering", "location": "Building A", "budget": 500000},
+          {"dept_id": 20, "dept_name": "Marketing", "location": "Building B", "budget": 300000},
+          {"dept_id": 30, "dept_name": "Sales", "location": "Building C", "budget": 400000}
+        ]
+      },
+      {
+        "name": "projects",
+        "columns": [
+          {"name": "project_id", "type": "int", "nullable": false, "is_pk": true, "is_fk": false},
+          {"name": "project_name", "type": "string", "nullable": false, "is_pk": false, "is_fk": false},
+          {"name": "start_date", "type": "date", "nullable": true, "is_pk": false, "is_fk": false},
+          {"name": "end_date", "type": "date", "nullable": true, "is_pk": false, "is_fk": false},
+          {"name": "lead_emp_id", "type": "int", "nullable": true, "is_pk": false, "is_fk": true},
+          {"name": "dept_id", "type": "int", "nullable": true, "is_pk": false, "is_fk": true}
+        ],
+        "sample_data": [
+          {"project_id": 101, "project_name": "Phoenix", "start_date": "2023-01-01", "end_date": "2023-12-31", "lead_emp_id": 1, "dept_id": 10},
+          {"project_id": 102, "project_name": "Atlas", "start_date": "2023-06-01", "end_date": null, "lead_emp_id": 3, "dept_id": 10},
+          {"project_id": 103, "project_name": "Spark", "start_date": "2024-01-15", "end_date": null, "lead_emp_id": 2, "dept_id": 20}
+        ]
+      }
+    ]
+  };
+
+  const EXAMPLE_5_TABLES = {
+    "tables": [
+      {
+        "name": "employees",
+        "columns": [
+          {"name": "emp_id", "type": "int", "nullable": false, "is_pk": true, "is_fk": false},
+          {"name": "first_name", "type": "string", "nullable": false, "is_pk": false, "is_fk": false},
+          {"name": "last_name", "type": "string", "nullable": false, "is_pk": false, "is_fk": false},
+          {"name": "email", "type": "string", "nullable": true, "is_pk": false, "is_fk": false},
+          {"name": "hire_date", "type": "date", "nullable": false, "is_pk": false, "is_fk": false},
+          {"name": "salary", "type": "decimal", "nullable": true, "is_pk": false, "is_fk": false},
+          {"name": "department_id", "type": "int", "nullable": true, "is_pk": false, "is_fk": true},
+          {"name": "manager_id", "type": "int", "nullable": true, "is_pk": false, "is_fk": true}
+        ],
+        "sample_data": [
+          {"emp_id": 1, "first_name": "Alice", "last_name": "Smith", "email": "alice@corp.com", "hire_date": "2020-01-15", "salary": 85000, "department_id": 10, "manager_id": null},
+          {"emp_id": 2, "first_name": "Bob", "last_name": "Johnson", "email": "bob@corp.com", "hire_date": "2021-03-22", "salary": 72000, "department_id": 20, "manager_id": 1}
+        ]
+      },
+      {
+        "name": "departments",
+        "columns": [
+          {"name": "dept_id", "type": "int", "nullable": false, "is_pk": true, "is_fk": false},
+          {"name": "dept_name", "type": "string", "nullable": false, "is_pk": false, "is_fk": false},
+          {"name": "location", "type": "string", "nullable": true, "is_pk": false, "is_fk": false},
+          {"name": "budget", "type": "decimal", "nullable": true, "is_pk": false, "is_fk": false}
+        ],
+        "sample_data": [
+          {"dept_id": 10, "dept_name": "Engineering", "location": "Building A", "budget": 500000},
+          {"dept_id": 20, "dept_name": "Marketing", "location": "Building B", "budget": 300000}
+        ]
+      },
+      {
+        "name": "projects",
+        "columns": [
+          {"name": "project_id", "type": "int", "nullable": false, "is_pk": true, "is_fk": false},
+          {"name": "project_name", "type": "string", "nullable": false, "is_pk": false, "is_fk": false},
+          {"name": "start_date", "type": "date", "nullable": true, "is_pk": false, "is_fk": false},
+          {"name": "end_date", "type": "date", "nullable": true, "is_pk": false, "is_fk": false},
+          {"name": "lead_emp_id", "type": "int", "nullable": true, "is_pk": false, "is_fk": true},
+          {"name": "dept_id", "type": "int", "nullable": true, "is_pk": false, "is_fk": true}
+        ],
+        "sample_data": [
+          {"project_id": 101, "project_name": "Phoenix", "start_date": "2023-01-01", "end_date": "2023-12-31", "lead_emp_id": 1, "dept_id": 10},
+          {"project_id": 102, "project_name": "Atlas", "start_date": "2023-06-01", "end_date": null, "lead_emp_id": 2, "dept_id": 20}
+        ]
+      },
+      {
+        "name": "customers",
+        "columns": [
+          {"name": "customer_id", "type": "int", "nullable": false, "is_pk": true, "is_fk": false},
+          {"name": "first_name", "type": "string", "nullable": false, "is_pk": false, "is_fk": false},
+          {"name": "last_name", "type": "string", "nullable": false, "is_pk": false, "is_fk": false},
+          {"name": "email", "type": "string", "nullable": true, "is_pk": false, "is_fk": false},
+          {"name": "created_date", "type": "date", "nullable": true, "is_pk": false, "is_fk": false},
+          {"name": "region_code", "type": "string", "nullable": true, "is_pk": false, "is_fk": false}
+        ],
+        "sample_data": [
+          {"customer_id": 1001, "first_name": "Eve", "last_name": "Davis", "email": "eve@example.com", "created_date": "2022-05-10", "region_code": "US-W"},
+          {"customer_id": 1002, "first_name": "Frank", "last_name": "Miller", "email": "frank@example.com", "created_date": "2023-01-20", "region_code": "US-E"}
+        ]
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {"name": "order_id", "type": "int", "nullable": false, "is_pk": true, "is_fk": false},
+          {"name": "customer_id", "type": "int", "nullable": false, "is_pk": false, "is_fk": true},
+          {"name": "order_date", "type": "date", "nullable": false, "is_pk": false, "is_fk": false},
+          {"name": "qty", "type": "int", "nullable": true, "is_pk": false, "is_fk": false},
+          {"name": "amount", "type": "decimal", "nullable": true, "is_pk": false, "is_fk": false},
+          {"name": "status_code", "type": "string", "nullable": true, "is_pk": false, "is_fk": false}
+        ],
+        "sample_data": [
+          {"order_id": 5001, "customer_id": 1001, "order_date": "2024-02-15", "qty": 3, "amount": 99.99, "status_code": "COMPLETED"},
+          {"order_id": 5002, "customer_id": 1002, "order_date": "2024-03-01", "qty": 2, "amount": 225.00, "status_code": "PENDING"}
+        ]
+      }
+    ]
+  };
+
+  function loadExample() {
+    document.getElementById('json-editor').value = JSON.stringify(EXAMPLE, null, 2);
+  }
+
+  function loadExample5Tables() {
+    document.getElementById('json-editor').value = JSON.stringify(EXAMPLE_5_TABLES, null, 2);
+  }
+
+  // Auto-load example on first visit
+  loadExample();
+
+  /* ---- Visual Builder helpers ---- */
+  let tableCount = 0;
+  function addTableForm(data) {
+    tableCount++;
+    const tid = 'table-' + tableCount;
+    const container = document.getElementById('tables-container');
+    const div = document.createElement('div');
+    div.className = 'card mb-1 fade-in';
+    div.id = tid;
+    div.innerHTML = `
+      <div class="card-header">
+        <input class="form-input" style="max-width:250px" placeholder="Table name" value="${data?.name || ''}" data-role="table-name">
+        <button class="btn btn-sm btn-secondary" onclick="removeEl('${tid}')">Remove</button>
+      </div>
+      <div class="col-rows" data-role="columns"></div>
+      <button class="btn btn-sm btn-secondary mt-1" onclick="addColRow('${tid}')">+ Add Column</button>
+    `;
+    container.appendChild(div);
+    if (data?.columns) data.columns.forEach(c => addColRow(tid, c));
+    else { addColRow(tid); addColRow(tid); }
+  }
+
+  function addColRow(tid, data) {
+    const container = document.querySelector(`#${tid} [data-role="columns"]`);
+    const row = document.createElement('div');
+    row.style.cssText = 'display:grid; grid-template-columns:1fr 100px 60px 60px 60px 36px; gap:.5rem; align-items:center; margin-bottom:.4rem;';
+    row.innerHTML = `
+      <input class="form-input" placeholder="Column name" value="${data?.name || ''}" data-role="col-name">
+      <select class="form-input" data-role="col-type">
+        <option value="string" ${data?.type === 'string' ? 'selected' : ''}>string</option>
+        <option value="int" ${data?.type === 'int' ? 'selected' : ''}>int</option>
+        <option value="decimal" ${data?.type === 'decimal' ? 'selected' : ''}>decimal</option>
+        <option value="date" ${data?.type === 'date' ? 'selected' : ''}>date</option>
+        <option value="boolean" ${data?.type === 'boolean' ? 'selected' : ''}>boolean</option>
+      </select>
+      <label style="font-size:.75rem;display:flex;align-items:center;gap:.25rem;">
+        <input type="checkbox" data-role="col-pk" ${data?.is_pk ? 'checked' : ''}> PK
+      </label>
+      <label style="font-size:.75rem;display:flex;align-items:center;gap:.25rem;">
+        <input type="checkbox" data-role="col-fk" ${data?.is_fk ? 'checked' : ''}> FK
+      </label>
+      <label style="font-size:.75rem;display:flex;align-items:center;gap:.25rem;">
+        <input type="checkbox" data-role="col-null" ${(data?.nullable !== false) ? 'checked' : ''}> Null
+      </label>
+      <button class="btn-icon btn-secondary" onclick="this.parentElement.remove()" title="Remove">&times;</button>
+    `;
+    container.appendChild(row);
+  }
+
+  function removeEl(id) { document.getElementById(id)?.remove(); }
+
+  function formToJson() {
+    const tables = [];
+    document.querySelectorAll('#tables-container > .card').forEach(card => {
+      const tname = card.querySelector('[data-role="table-name"]').value.trim();
+      if (!tname) return;
+      const cols = [];
+      card.querySelectorAll('[data-role="columns"] > div').forEach(row => {
+        const name = row.querySelector('[data-role="col-name"]').value.trim();
+        if (!name) return;
+        cols.push({
+          name,
+          type: row.querySelector('[data-role="col-type"]').value,
+          is_pk: row.querySelector('[data-role="col-pk"]').checked,
+          is_fk: row.querySelector('[data-role="col-fk"]').checked,
+          nullable: row.querySelector('[data-role="col-null"]').checked,
+        });
+      });
+      tables.push({ name: tname, columns: cols, sample_data: [] });
+    });
+    return { tables };
+  }
+
+  /* ---- Submit ---- */
+  async function submitSource() {
+    const activeTab = document.querySelector('.tab-btn.active')?.dataset.tab;
+    let payload;
+
+    if (activeTab === 'tab-json') {
+      const raw = document.getElementById('json-editor').value.trim();
+      if (!raw) { showAlert('Please enter JSON data.', 'error'); return; }
+      try { payload = JSON.parse(raw); } catch (e) { showAlert('Invalid JSON: ' + e.message, 'error'); return; }
+    } else {
+      payload = formToJson();
+    }
+
+    if (!payload.tables || payload.tables.length === 0) {
+      showAlert('At least one table is required.', 'error'); return;
+    }
+
+    showLoading('Ingesting schema & discovering joins...');
+    document.getElementById('submit-btn').disabled = true;
+
+    try {
+      const result = await apiPost('/api/source/submit', payload);
+      if (result.error) {
+        hideLoading();
+        showAlert('Error: ' + result.error, 'error');
+      } else {
+        document.getElementById('status-text').textContent =
+          `${result.tables_count} tables, ${result.edges_count} joins discovered in ${result.time}s`;
+        window.location.href = result.redirect;
+      }
+    } catch (e) {
+      hideLoading();
+      showAlert('Network error: ' + e.message, 'error');
+    }
+    document.getElementById('submit-btn').disabled = false;
+  }
+
+  function showAlert(msg, type) {
+    const area = document.getElementById('alert-area');
+    area.innerHTML = `<div class="alert alert-${type} fade-in">${msg}</div>`;
+    setTimeout(() => area.innerHTML = '', 5000);
+  }
+</script>
+{% endblock %}

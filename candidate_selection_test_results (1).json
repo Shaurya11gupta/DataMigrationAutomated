@@ -1,0 +1,445 @@
+{
+  "summary": {
+    "total_tests": 22,
+    "col_accuracy": 0.9091,
+    "transform_accuracy": 0.5455,
+    "both_accuracy": 0.5,
+    "avg_time_seconds": 7.565,
+    "total_time_seconds": 166.4,
+    "device": "cuda",
+    "gpu": "NVIDIA GB10",
+    "adapter_path": "schema_matcher_llm/adapter",
+    "base_model": "microsoft/Phi-3-mini-4k-instruct"
+  },
+  "results": [
+    {
+      "scenario": "HR Schema",
+      "target": "dim_employee.employee_key (int)",
+      "expected_cols": [
+        "employees.emp_id"
+      ],
+      "predicted_cols": [
+        "employees.emp_id"
+      ],
+      "cols_correct": true,
+      "expected_tf": "rename",
+      "predicted_tf": "fk_dimension_lookup",
+      "predicted_sub_op": "fk_dimension_lookup",
+      "tf_correct": false,
+      "both_correct": false,
+      "reasoning": "The target column dim_employee.employee_key is a surrogate key that needs to be mapped from the employees table. Since it is a primary key, we use the fk_dimension_lookup transform to map the emp_id c",
+      "raw_response": "source_columns: employees.emp_id\ntransform_type: fk_dimension_lookup\nsub_operation: fk_dimension_lookup\nreasoning: The target column dim_employee.employee_key is a surrogate key that needs to be mapped from the employees table. Since it is a primary key, we use the fk_dimension_lookup transform to map the emp_id column from the employees table to the dim_employee.employee_key column.",
+      "time_seconds": 7.573
+    },
+    {
+      "scenario": "HR Schema",
+      "target": "dim_employee.full_name (string)",
+      "expected_cols": [
+        "employees.first_name",
+        "employees.last_name"
+      ],
+      "predicted_cols": [
+        "employees.first_name",
+        "employees.last_name"
+      ],
+      "cols_correct": true,
+      "expected_tf": "concat",
+      "predicted_tf": "template",
+      "predicted_sub_op": "string_template",
+      "tf_correct": false,
+      "both_correct": false,
+      "reasoning": "The target column 'dim_employee.full_name' requires a formatted string that combines the employee's first and last names. Since this transformation involves assembling columns into a formatted display",
+      "raw_response": "source_columns: employees.first_name, employees.last_name\ntransform_type: template\nsub_operation: string_template\nreasoning: The target column 'dim_employee.full_name' requires a formatted string that combines the employee's first and last names. Since this transformation involves assembling columns into a formatted display string pattern, the 'template' transform type is used. The 'string_template' sub-operation specifies that the columns from the 'employees' table are to be concatenated with a space in between to create the full name.",
+      "time_seconds": 7.91
+    },
+    {
+      "scenario": "HR Schema",
+      "target": "dim_employee.hire_year (int)",
+      "expected_cols": [
+        "employees.hire_date"
+      ],
+      "predicted_cols": [
+        "employees.hire_date"
+      ],
+      "cols_correct": true,
+      "expected_tf": "date_part",
+      "predicted_tf": "date_part",
+      "predicted_sub_op": "extract_year",
+      "tf_correct": true,
+      "both_correct": true,
+      "reasoning": "The target column 'dim_employee.hire_year' requires the year from the 'hire_date' column in the 'employees' table. The 'date_part' transform with 'extract_year' operation is used to extract the year f",
+      "raw_response": "source_columns: employees.hire_date\ntransform_type: date_part\nsub_operation: extract_year\nreasoning: The target column 'dim_employee.hire_year' requires the year from the 'hire_date' column in the 'employees' table. The 'date_part' transform with 'extract_year' operation is used to extract the year from the date.",
+      "time_seconds": 5.787
+    },
+    {
+      "scenario": "HR Schema",
+      "target": "dim_employee.department_name (string)",
+      "expected_cols": [
+        "departments.dept_name"
+      ],
+      "predicted_cols": [
+        "departments.dept_name"
+      ],
+      "cols_correct": true,
+      "expected_tf": "fk_lookup",
+      "predicted_tf": "rename",
+      "predicted_sub_op": "rename_only",
+      "tf_correct": false,
+      "both_correct": false,
+      "reasoning": "The target column 'dim_employee.department_name' is a string that represents the name of the department. Since the department name is directly available in the 'departments' table, we can directly map",
+      "raw_response": "source_columns: departments.dept_name\ntransform_type: rename\nsub_operation: rename_only\nreasoning: The target column 'dim_employee.department_name' is a string that represents the name of the department. Since the department name is directly available in the 'departments' table, we can directly map the 'dept_name' column from the 'departments' table to the target column without any transformation.",
+      "time_seconds": 6.469
+    },
+    {
+      "scenario": "HR Schema",
+      "target": "dim_employee.annual_salary (decimal)",
+      "expected_cols": [
+        "employees.salary"
+      ],
+      "predicted_cols": [
+        "employees.salary"
+      ],
+      "cols_correct": true,
+      "expected_tf": "rename",
+      "predicted_tf": "arithmetic",
+      "predicted_sub_op": "ratio_percentage",
+      "tf_correct": false,
+      "both_correct": false,
+      "reasoning": "The target column 'dim_employee.annual_salary' represents the annual salary of an employee. Since the source column 'employees.salary' is already in decimal format, we need to convert it to an annual ",
+      "raw_response": "source_columns: employees.salary\ntransform_type: arithmetic\nsub_operation: ratio_percentage\nreasoning: The target column 'dim_employee.annual_salary' represents the annual salary of an employee. Since the source column 'employees.salary' is already in decimal format, we need to convert it to an annual salary. This can be done by multiplying the monthly salary by 12 (the number of months in a year). The arithmetic operation 'ratio_percentage' is used to perform this multiplication.",
+      "time_seconds": 7.851
+    },
+    {
+      "scenario": "E-commerce Schema",
+      "target": "fact_order.customer_country (string)",
+      "expected_cols": [
+        "customers.country"
+      ],
+      "predicted_cols": [
+        "customers.country"
+      ],
+      "cols_correct": true,
+      "expected_tf": "fk_lookup",
+      "predicted_tf": "code_to_label",
+      "predicted_sub_op": "code_to_label",
+      "tf_correct": false,
+      "both_correct": false,
+      "reasoning": "The target column 'fact_order.customer_country' requires a human-readable label for the country code from the 'customers' table. The 'country' column in the 'customers' table contains the country code",
+      "raw_response": "source_columns: customers.country\ntransform_type: code_to_label\nsub_operation: code_to_label\nreasoning: The target column 'fact_order.customer_country' requires a human-readable label for the country code from the 'customers' table. The 'country' column in the 'customers' table contains the country codes, which need to be mapped to their corresponding country names. This mapping is done using the 'code_to_label' transform type, which converts the country code to a human-readable label.",
+      "time_seconds": 7.831
+    },
+    {
+      "scenario": "E-commerce Schema",
+      "target": "fact_order.customer_name (string)",
+      "expected_cols": [
+        "customers.first_name",
+        "customers.last_name"
+      ],
+      "predicted_cols": [
+        "customers.first_name",
+        "customers.last_name"
+      ],
+      "cols_correct": true,
+      "expected_tf": "concat",
+      "predicted_tf": "code_to_label",
+      "predicted_sub_op": "code_to_label",
+      "tf_correct": false,
+      "both_correct": false,
+      "reasoning": "The target column fact_order.customer_name requires a human-readable label string that combines the customer's first and last names. This mapping uses the code_to_label transform to convert the code (",
+      "raw_response": "source_columns: customers.first_name, customers.last_name\ntransform_type: code_to_label\nsub_operation: code_to_label\nreasoning: The target column fact_order.customer_name requires a human-readable label string that combines the customer's first and last names. This mapping uses the code_to_label transform to convert the code (first_name and last_name) into a label (full name).",
+      "time_seconds": 6.661
+    },
+    {
+      "scenario": "E-commerce Schema",
+      "target": "fact_order.order_year (int)",
+      "expected_cols": [
+        "orders.order_date"
+      ],
+      "predicted_cols": [
+        "orders.order_date"
+      ],
+      "cols_correct": true,
+      "expected_tf": "date_part",
+      "predicted_tf": "date_part",
+      "predicted_sub_op": "extract_year",
+      "tf_correct": true,
+      "both_correct": true,
+      "reasoning": "The target column fact_order.order_year requires the year from the order date, which is a direct computation from the orders table.",
+      "raw_response": "source_columns: orders.order_date\ntransform_type: date_part\nsub_operation: extract_year\nreasoning: The target column fact_order.order_year requires the year from the order date, which is a direct computation from the orders table.",
+      "time_seconds": 4.117
+    },
+    {
+      "scenario": "E-commerce Schema",
+      "target": "fact_order.is_completed (boolean)",
+      "expected_cols": [
+        "orders.status"
+      ],
+      "predicted_cols": [
+        "orders.status"
+      ],
+      "cols_correct": true,
+      "expected_tf": "conditional",
+      "predicted_tf": "conditional",
+      "predicted_sub_op": "threshold_flag",
+      "tf_correct": true,
+      "both_correct": true,
+      "reasoning": "The target column 'fact_order.is_completed' is a boolean flag indicating whether an order is complete. This can be determined by checking the 'status' column in the 'orders' table. If the status is 'c",
+      "raw_response": "source_columns: orders.status\ntransform_type: conditional\nsub_operation: threshold_flag\nreasoning: The target column 'fact_order.is_completed' is a boolean flag indicating whether an order is complete. This can be determined by checking the 'status' column in the 'orders' table. If the status is 'completed', then the order is considered complete. Therefore, a conditional transformation is needed to check the status and set the flag accordingly.",
+      "time_seconds": 6.679
+    },
+    {
+      "scenario": "E-commerce Schema",
+      "target": "fact_sales.line_total (decimal)",
+      "expected_cols": [
+        "order_items.quantity",
+        "order_items.unit_price"
+      ],
+      "predicted_cols": [
+        "order_items.quantity",
+        "order_items.unit_price"
+      ],
+      "cols_correct": true,
+      "expected_tf": "arithmetic",
+      "predicted_tf": "arithmetic",
+      "predicted_sub_op": "multiply",
+      "tf_correct": true,
+      "both_correct": true,
+      "reasoning": "To calculate the line total for each order item, we need to multiply the quantity of the item by its unit price. This operation is a direct computation and does not require any joins or transformation",
+      "raw_response": "source_columns: order_items.quantity, order_items.unit_price\ntransform_type: arithmetic\nsub_operation: multiply\nreasoning: To calculate the line total for each order item, we need to multiply the quantity of the item by its unit price. This operation is a direct computation and does not require any joins or transformations on the source columns.",
+      "time_seconds": 5.217
+    },
+    {
+      "scenario": "E-commerce Schema",
+      "target": "dim_product.category_label (string)",
+      "expected_cols": [
+        "products.category_code"
+      ],
+      "predicted_cols": [
+        "products.category_code"
+      ],
+      "cols_correct": true,
+      "expected_tf": "code_to_label",
+      "predicted_tf": "code_to_label",
+      "predicted_sub_op": "code_to_label",
+      "tf_correct": true,
+      "both_correct": true,
+      "reasoning": "The target column dim_product.category_label requires a human-readable label for the category code. The category_code is a string in the products table, which can be directly mapped to a label using t",
+      "raw_response": "source_columns: products.category_code\ntransform_type: code_to_label\nsub_operation: code_to_label\nreasoning: The target column dim_product.category_label requires a human-readable label for the category code. The category_code is a string in the products table, which can be directly mapped to a label using the code_to_label transform. This mapping does not require any joins or computations, as the category_code directly corresponds to the desired label.",
+      "time_seconds": 7.143
+    },
+    {
+      "scenario": "Healthcare Schema",
+      "target": "dim_patient.patient_name (string)",
+      "expected_cols": [
+        "patients.first_name",
+        "patients.last_name"
+      ],
+      "predicted_cols": [
+        "patients.first_name",
+        "patients.last_name"
+      ],
+      "cols_correct": true,
+      "expected_tf": "concat",
+      "predicted_tf": "template",
+      "predicted_sub_op": "string_template",
+      "tf_correct": false,
+      "both_correct": false,
+      "reasoning": "The target column 'dim_patient.patient_name' requires a formatted string that combines the patient's first and last names. Since this transformation involves assembling columns into a formatted displa",
+      "raw_response": "source_columns: patients.first_name, patients.last_name\ntransform_type: template\nsub_operation: string_template\nreasoning: The target column 'dim_patient.patient_name' requires a formatted string that combines the patient's first and last names. Since this transformation involves assembling columns into a formatted display string pattern, the 'template' transform type is used. The 'string_template' sub-operation specifies that the columns from the 'patients' table are to be concatenated with a space in between to create the full name.",
+      "time_seconds": 8.187
+    },
+    {
+      "scenario": "Healthcare Schema",
+      "target": "dim_patient.birth_year (int)",
+      "expected_cols": [
+        "patients.dob"
+      ],
+      "predicted_cols": [
+        "patients.dob"
+      ],
+      "cols_correct": true,
+      "expected_tf": "date_part",
+      "predicted_tf": "date_part",
+      "predicted_sub_op": "extract_year",
+      "tf_correct": true,
+      "both_correct": true,
+      "reasoning": "The target column 'dim_patient.birth_year' requires the year from the patient's date of birth (dob). Since the dob is in the 'patients' table, we need to extract the year from this date. The 'date_par",
+      "raw_response": "source_columns: patients.dob\ntransform_type: date_part\nsub_operation: extract_year\nreasoning: The target column 'dim_patient.birth_year' requires the year from the patient's date of birth (dob). Since the dob is in the 'patients' table, we need to extract the year from this date. The 'date_part' transform with the 'extract_year' sub-operation is used to get the year component from the date.",
+      "time_seconds": 7.119
+    },
+    {
+      "scenario": "Healthcare Schema",
+      "target": "dim_patient.gender_label (string)",
+      "expected_cols": [
+        "patients.gender_code"
+      ],
+      "predicted_cols": [
+        "patients.gender_code"
+      ],
+      "cols_correct": true,
+      "expected_tf": "code_to_label",
+      "predicted_tf": "code_to_label",
+      "predicted_sub_op": "code_to_label",
+      "tf_correct": true,
+      "both_correct": true,
+      "reasoning": "The gender_code column in the patients table needs to be mapped to a human-readable label. This mapping is not a direct copy or a rename, as it involves converting a code to a label string. The code_t",
+      "raw_response": "source_columns: patients.gender_code\ntransform_type: code_to_label\nsub_operation: code_to_label\nreasoning: The gender_code column in the patients table needs to be mapped to a human-readable label. This mapping is not a direct copy or a rename, as it involves converting a code to a label string. The code_to_label transform is used to map the gender_code to a gender_label string.",
+      "time_seconds": 6.705
+    },
+    {
+      "scenario": "Healthcare Schema",
+      "target": "dim_patient.insurance_plan (string)",
+      "expected_cols": [
+        "insurance_plans.plan_name"
+      ],
+      "predicted_cols": [
+        "insurance_plans.plan_name"
+      ],
+      "cols_correct": true,
+      "expected_tf": "fk_lookup",
+      "predicted_tf": "code_to_label",
+      "predicted_sub_op": "code_to_label",
+      "tf_correct": false,
+      "both_correct": false,
+      "reasoning": "The target column 'dim_patient.insurance_plan' requires a human-readable label for the insurance plan name. The 'plan_name' column in the 'insurance_plans' table contains the actual data needed for th",
+      "raw_response": "source_columns: insurance_plans.plan_name\ntransform_type: code_to_label\nsub_operation: code_to_label\nreasoning: The target column 'dim_patient.insurance_plan' requires a human-readable label for the insurance plan name. The 'plan_name' column in the 'insurance_plans' table contains the actual data needed for this transformation. The 'code_to_label' transform is used to map the 'plan_name' column to the target column 'dim_patient.insurance_plan'.",
+      "time_seconds": 8.502
+    },
+    {
+      "scenario": "Healthcare Schema",
+      "target": "fact_visit.patient_age_at_visit (int)",
+      "expected_cols": [
+        "patients.dob",
+        "visits.visit_date"
+      ],
+      "predicted_cols": [
+        "patients.dob"
+      ],
+      "cols_correct": false,
+      "expected_tf": "date_diff",
+      "predicted_tf": "date_diff",
+      "predicted_sub_op": "date_difference",
+      "tf_correct": true,
+      "both_correct": false,
+      "reasoning": "To calculate the patient's age at the time of the visit, we need to find the difference between the patient's date of birth (dob) and the visit date. This requires a date difference operation.\n\nsource",
+      "raw_response": "source_columns: patients.dob\ntransform_type: date_diff\nsub_operation: date_difference\nreasoning: To calculate the patient's age at the time of the visit, we need to find the difference between the patient's date of birth (dob) and the visit date. This requires a date difference operation.\n\nsource_columns: patients.dob, visits.visit_date\ntransform_type: date_diff\nsub_operation: date_difference\nreasoning: We need to calculate the age of the patient at the time of the visit. This requires finding the difference between the patient's date of birth (dob) and the visit date.\n\nsource_columns: patients.dob, visits.visit_date\ntransform_type: date_diff\nsub_operation: date_difference\nreasoning: To calculate the patient's age at the time of the visit, we need to find the difference between the patient's date of birth (dob) and the visit date. This requires a date difference operation.\n\nsource_columns: patients.dob, visits.visit_date\ntransform_type: date_diff\nsub_operation: date_difference\nreasoning: We need to calculate the age of the patient at the time of the visit. This requires finding the difference between the patient's date of birth (dob) and the visit",
+      "time_seconds": 19.217
+    },
+    {
+      "scenario": "Healthcare Schema",
+      "target": "fact_visit.department_name (string)",
+      "expected_cols": [
+        "hospital_departments.dept_name"
+      ],
+      "predicted_cols": [
+        "doctors.dept_name"
+      ],
+      "cols_correct": false,
+      "expected_tf": "lookup_join",
+      "predicted_tf": "fk_lookup",
+      "predicted_sub_op": "fk_dimension_lookup",
+      "tf_correct": false,
+      "both_correct": false,
+      "reasoning": "The target column 'fact_visit.department_name' requires data from the 'doctors' table, which is linked to the 'hospital_departments' table via the 'department_id' foreign key. Since the 'department_na",
+      "raw_response": "source_columns: doctors.dept_name\ntransform_type: fk_lookup\nsub_operation: fk_dimension_lookup\nreasoning: The target column 'fact_visit.department_name' requires data from the 'doctors' table, which is linked to the 'hospital_departments' table via the 'department_id' foreign key. Since the 'department_name' is not in the 'doctors' table but in the 'hospital_departments' table, we need to perform a foreign key lookup to retrieve the department name based on the 'department_id' from the 'doctors' table.",
+      "time_seconds": 9.616
+    },
+    {
+      "scenario": "Banking Schema (with noise columns)",
+      "target": "dim_customer.customer_name (string)",
+      "expected_cols": [
+        "bank_customers.first_name",
+        "bank_customers.last_name"
+      ],
+      "predicted_cols": [
+        "bank_customers.first_name",
+        "bank_customers.last_name"
+      ],
+      "cols_correct": true,
+      "expected_tf": "concat",
+      "predicted_tf": "code_to_label",
+      "predicted_sub_op": "category_harmonization",
+      "tf_correct": false,
+      "both_correct": false,
+      "reasoning": "The target column 'customer_name' requires a human-readable label from the 'first_name' and 'last_name' columns in the 'bank_customers' table. The 'code_to_label' transform is used to map the 'first_n",
+      "raw_response": "source_columns: bank_customers.first_name, bank_customers.last_name\ntransform_type: code_to_label\nsub_operation: category_harmonization\nreasoning: The target column 'customer_name' requires a human-readable label from the 'first_name' and 'last_name' columns in the 'bank_customers' table. The 'code_to_label' transform is used to map the 'first_name' and 'last_name' columns to the 'customer_name' column.",
+      "time_seconds": 7.878
+    },
+    {
+      "scenario": "Banking Schema (with noise columns)",
+      "target": "dim_account.account_type_label (string)",
+      "expected_cols": [
+        "bank_accounts.account_type_code"
+      ],
+      "predicted_cols": [
+        "bank_accounts.account_type_code"
+      ],
+      "cols_correct": true,
+      "expected_tf": "code_to_label",
+      "predicted_tf": "code_to_label",
+      "predicted_sub_op": "code_to_label",
+      "tf_correct": true,
+      "both_correct": true,
+      "reasoning": "The target column dim_account.account_type_label requires a human-readable label for the account type. The source column bank_accounts.account_type_code contains the codes that need to be mapped to th",
+      "raw_response": "source_columns: bank_accounts.account_type_code\ntransform_type: code_to_label\nsub_operation: code_to_label\nreasoning: The target column dim_account.account_type_label requires a human-readable label for the account type. The source column bank_accounts.account_type_code contains the codes that need to be mapped to their corresponding labels. The code_to_label transform is used to map the code to a label string.",
+      "time_seconds": 7.177
+    },
+    {
+      "scenario": "Banking Schema (with noise columns)",
+      "target": "dim_account.is_active (boolean)",
+      "expected_cols": [
+        "bank_accounts.status_code"
+      ],
+      "predicted_cols": [
+        "bank_accounts.status_code"
+      ],
+      "cols_correct": true,
+      "expected_tf": "conditional",
+      "predicted_tf": "conditional",
+      "predicted_sub_op": "threshold_flag",
+      "tf_correct": true,
+      "both_correct": true,
+      "reasoning": "The status_code column in the bank_accounts table likely contains a value that indicates whether an account is active or not. By using a conditional transform with a threshold_flag operation, we can m",
+      "raw_response": "source_columns: bank_accounts.status_code\ntransform_type: conditional\nsub_operation: threshold_flag\nreasoning: The status_code column in the bank_accounts table likely contains a value that indicates whether an account is active or not. By using a conditional transform with a threshold_flag operation, we can map this status_code to a boolean value indicating the account's active status.",
+      "time_seconds": 6.037
+    },
+    {
+      "scenario": "Banking Schema (with noise columns)",
+      "target": "dim_customer.income_bracket (string)",
+      "expected_cols": [
+        "bank_customers.income_annual"
+      ],
+      "predicted_cols": [
+        "bank_customers.income_annual"
+      ],
+      "cols_correct": true,
+      "expected_tf": "bucketing",
+      "predicted_tf": "bucketing",
+      "predicted_sub_op": "range_classification",
+      "tf_correct": true,
+      "both_correct": true,
+      "reasoning": "The target column 'income_bracket' is a string that represents an income range bucket. This requires grouping the 'income_annual' numeric value from the 'bank_customers' table into predefined income r",
+      "raw_response": "source_columns: bank_customers.income_annual\ntransform_type: bucketing\nsub_operation: range_classification\nreasoning: The target column 'income_bracket' is a string that represents an income range bucket. This requires grouping the 'income_annual' numeric value from the 'bank_customers' table into predefined income range categories. The 'range_classification' sub-operation is used to categorize the income into brackets such as \"Low\", \"Medium\", \"High\", etc.",
+      "time_seconds": 7.784
+    },
+    {
+      "scenario": "Banking Schema (with noise columns)",
+      "target": "fact_txn.transaction_year (int)",
+      "expected_cols": [
+        "bank_transactions.txn_date"
+      ],
+      "predicted_cols": [
+        "bank_transactions.txn_date"
+      ],
+      "cols_correct": true,
+      "expected_tf": "date_part",
+      "predicted_tf": "date_part",
+      "predicted_sub_op": "extract_year",
+      "tf_correct": true,
+      "both_correct": true,
+      "reasoning": "The target column fact_txn.transaction_year requires the year from the transaction date, which is a direct extraction from the bank_transactions.txn_date column.",
+      "raw_response": "source_columns: bank_transactions.txn_date\ntransform_type: date_part\nsub_operation: extract_year\nreasoning: The target column fact_txn.transaction_year requires the year from the transaction date, which is a direct extraction from the bank_transactions.txn_date column.",
+      "time_seconds": 4.977
+    }
+  ]
+}

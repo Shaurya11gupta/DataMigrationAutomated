@@ -1,0 +1,8 @@
+# Requirements for Candidate Generation V2 training
+# Install with: pip install -r requirements-candidate-v2.txt
+torch>=2.0.0
+sentence-transformers>=3.0.0
+transformers>=4.40.0
+datasets>=2.18.0
+accelerate>=1.1.0
+numpy>=1.24.0

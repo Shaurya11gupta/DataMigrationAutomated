@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+{% set active_page = "source_viz" %}
+{% set step = 2 %}
+
+{% block title %}Source Schema Graph – DataMigrationCrane{% endblock %}
+{% block head %}
+<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="page-header fade-in">
+  <h1 class="page-title">Source Schema &amp; Join Graph</h1>
+  <p class="page-subtitle">Interactive visualization of your source tables and discovered join relationships.</p>
+</div>
+
+<!-- Stats -->
+<div class="stats-grid fade-in delay-1">
+  <div class="stat-card">
+    <div class="stat-value primary" id="stat-tables">0</div>
+    <div class="stat-label">Tables</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value accent" id="stat-columns">0</div>
+    <div class="stat-label">Total Columns</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value success" id="stat-joins">0</div>
+    <div class="stat-label">Join Relationships</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value warning" id="stat-time">0s</div>
+    <div class="stat-label">Discovery Time</div>
+  </div>
+</div>
+
+<!-- Graph + detail panel -->
+<div style="position:relative" class="fade-in delay-2">
+  <div id="graph-container" class="graph-container"></div>
+
+  <!-- Detail panel (table info) -->
+  <div id="detail-panel" class="detail-panel hidden">
+    <div class="flex-between mb-1">
+      <div class="detail-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary-l)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+        <span id="detail-name"></span>
+      </div>
+      <button class="btn-icon btn-secondary" onclick="closeDetail()" title="Close">&times;</button>
+    </div>
+    <div id="detail-meta" class="text-sm text-dim mb-1"></div>
+    <ul id="detail-cols" class="col-list"></ul>
+  </div>
+</div>
+
+<!-- Edge legend -->
+<div class="card mt-1 fade-in delay-3" style="max-width:600px">
+  <div class="card-title" style="margin-bottom:.5rem">Legend</div>
+  <div style="display:flex; gap:2rem; font-size:.85rem; color:var(--text-dim)">
+    <div style="display:flex;align-items:center;gap:.4rem">
+      <span style="width:30px;height:4px;background:var(--success);border-radius:2px;display:inline-block"></span>
+      High confidence (&ge;0.8)
+    </div>
+    <div style="display:flex;align-items:center;gap:.4rem">
+      <span style="width:30px;height:4px;background:var(--warning);border-radius:2px;display:inline-block"></span>
+      Medium (0.5–0.8)
+    </div>
+    <div style="display:flex;align-items:center;gap:.4rem">
+      <span style="width:30px;height:4px;background:var(--error);border-radius:2px;display:inline-block"></span>
+      Low (&lt;0.5)
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:1.5rem">
+  <a href="{{ url_for('target_ingestion') }}" class="btn btn-primary btn-lg">
+    Continue to Target Ingestion
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+  </a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  /* ---- Data from Flask ---- */
+  const tablesData = {{ tables | safe }};
+  const edgesData  = {{ edges | safe }};
+  const joinTime   = {{ join_time }};
+
+  /* ---- Stats ---- */
+  document.getElementById('stat-tables').textContent = tablesData.length;
+  document.getElementById('stat-columns').textContent = tablesData.reduce((s,t) => s + t.col_count, 0);
+  document.getElementById('stat-joins').textContent = edgesData.length;
+  document.getElementById('stat-time').textContent = joinTime + 's';
+
+  /* ---- Color palette for tables ---- */
+  const TABLE_COLORS = [
+    { bg: '#312E81', border: '#6366F1', font: '#C7D2FE' },
+    { bg: '#1E3A5F', border: '#06B6D4', font: '#CFFAFE' },
+    { bg: '#3B1F5B', border: '#8B5CF6', font: '#DDD6FE' },
+    { bg: '#1C3D2E', border: '#10B981', font: '#A7F3D0' },
+    { bg: '#3D2F1B', border: '#F59E0B', font: '#FDE68A' },
+    { bg: '#3B1C1C', border: '#EF4444', font: '#FECACA' },
+    { bg: '#1E3348', border: '#3B82F6', font: '#BFDBFE' },
+    { bg: '#362D1E', border: '#D97706', font: '#FDE68A' },
+  ];
+
+  /* ---- Build vis.js nodes & edges ---- */
+  const nodes = tablesData.map((t, i) => {
+    const c = TABLE_COLORS[i % TABLE_COLORS.length];
+    const pkCols = t.columns.filter(col => col.is_pk).map(col => col.name);
+    const fkCols = t.columns.filter(col => col.is_fk).map(col => col.name);
+    let label = t.name + '\n' + t.col_count + ' columns';
+    if (t.row_count) label += ' · ' + t.row_count + ' rows';
+    return {
+      id: t.name,
+      label: label,
+      shape: 'box',
+      color: { background: c.bg, border: c.border, highlight: { background: c.bg, border: '#fff' } },
+      font: { color: c.font, face: 'Inter, sans-serif', size: 14, bold: { color: '#fff' } },
+      borderWidth: 2,
+      borderWidthSelected: 3,
+      shadow: { enabled: true, color: 'rgba(0,0,0,0.3)', size: 10 },
+      margin: 12,
+      _data: t,
+    };
+  });
+
+  const visEdges = edgesData.map((e, i) => {
+    const conf = e.confidence;
+    let color = '#EF4444';
+    if (conf >= 0.8) color = '#10B981';
+    else if (conf >= 0.5) color = '#F59E0B';
+
+    const leftStr = e.left_cols.join(', ');
+    const rightStr = e.right_cols.join(', ');
+    const label = leftStr + ' ↔ ' + rightStr + '\n' + e.cardinality + ' (' + Math.round(conf * 100) + '%)';
+
+    return {
+      id: 'edge-' + i,
+      from: e.left_table,
+      to: e.right_table,
+      label: label,
+      color: { color: color, highlight: '#fff', opacity: 0.9 },
+      font: { color: '#94A3B8', size: 11, strokeWidth: 0, face: 'JetBrains Mono, monospace', align: 'middle' },
+      width: Math.max(1.5, conf * 4),
+      smooth: { type: 'curvedCW', roundness: 0.15 },
+      arrows: { to: { enabled: false } },
+      _data: e,
+    };
+  });
+
+  /* ---- Render graph ---- */
+  const container = document.getElementById('graph-container');
+  const network = new vis.Network(container, {
+    nodes: new vis.DataSet(nodes),
+    edges: new vis.DataSet(visEdges),
+  }, {
+    physics: {
+      solver: 'forceAtlas2Based',
+      forceAtlas2Based: { gravitationalConstant: -120, centralGravity: 0.008, springLength: 280, springConstant: 0.03, damping: 0.5 },
+      stabilization: { iterations: 200 },
+    },
+    interaction: { hover: true, tooltipDelay: 200, zoomView: true, dragView: true },
+    layout: { improvedLayout: true },
+    edges: {
+      font: { size: 12, strokeWidth: 3, strokeColor: '#0F172A', background: '#1E293B' },
+      smooth: { type: 'curvedCW', roundness: 0.2 },
+    },
+  });
+
+  /* ---- Click handler: show table detail ---- */
+  network.on('click', function(params) {
+    if (params.nodes.length > 0) {
+      const nodeId = params.nodes[0];
+      const table = tablesData.find(t => t.name === nodeId);
+      if (table) showDetail(table);
+    } else if (params.edges.length > 0) {
+      const edgeId = params.edges[0];
+      const edge = edgesData[parseInt(edgeId.replace('edge-', ''))];
+      if (edge) showEdgeDetail(edge);
+    } else {
+      closeDetail();
+    }
+  });
+
+  function showDetail(table) {
+    const panel = document.getElementById('detail-panel');
+    panel.classList.remove('hidden');
+    document.getElementById('detail-name').textContent = table.name;
+    document.getElementById('detail-meta').textContent =
+      table.col_count + ' columns' + (table.row_count ? ' · ' + table.row_count + ' sample rows' : '');
+
+    const colList = document.getElementById('detail-cols');
+    colList.innerHTML = table.columns.map(c => `
+      <li class="col-item">
+        <span style="flex:1">${c.name}</span>
+        <span class="col-type">${c.type}</span>
+        ${c.is_pk ? '<span class="col-badge badge-pk">PK</span>' : ''}
+        ${c.is_fk ? '<span class="col-badge badge-fk">FK</span>' : ''}
+      </li>
+    `).join('');
+  }
+
+  function showEdgeDetail(edge) {
+    const panel = document.getElementById('detail-panel');
+    panel.classList.remove('hidden');
+    document.getElementById('detail-name').textContent = edge.left_table + ' ↔ ' + edge.right_table;
+    const conf = Math.round(edge.confidence * 100);
+    document.getElementById('detail-meta').innerHTML =
+      `Cardinality: <strong>${edge.cardinality}</strong> · Confidence: <strong>${conf}%</strong>`;
+    const colList = document.getElementById('detail-cols');
+    let html = '<li class="col-item" style="font-weight:600;color:var(--accent)">Join Columns</li>';
+    edge.left_cols.forEach((lc, i) => {
+      html += `<li class="col-item"><span>${edge.left_table}.${lc}</span><span style="color:var(--text-muted)">↔</span><span>${edge.right_table}.${edge.right_cols[i]}</span></li>`;
+    });
+    if (edge.reasons && edge.reasons.length) {
+      html += '<li class="col-item" style="font-weight:600;color:var(--warning);margin-top:.5rem">Reasons</li>';
+      edge.reasons.forEach(r => { html += `<li class="col-item text-sm text-dim">${r}</li>`; });
+    }
+    colList.innerHTML = html;
+  }
+
+  function closeDetail() {
+    document.getElementById('detail-panel').classList.add('hidden');
+  }
+</script>
+{% endblock %}

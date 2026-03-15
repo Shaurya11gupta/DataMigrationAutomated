@@ -1,0 +1,797 @@
+{
+  "summary": {
+    "total": 22,
+    "col_accuracy": 0.9091,
+    "llm_tf_accuracy": 0.7273,
+    "clf_tf_accuracy": 0.4545,
+    "llm_both_accuracy": 0.6818,
+    "hybrid_both_accuracy": 0.4545,
+    "improvement_cases": -5,
+    "clf_top3_coverage": 0.5909
+  },
+  "details": [
+    {
+      "target": "dim_employee.employee_key (int)",
+      "scenario": "HR Schema",
+      "cols_ok": true,
+      "expected_cols": [
+        "employees.emp_id"
+      ],
+      "predicted_cols": [
+        "employees.emp_id"
+      ],
+      "llm_tf": "rename",
+      "llm_tf_ok": true,
+      "expected_tf_llm": "rename",
+      "clf_tf": "count_agg",
+      "clf_conf": 0.2401,
+      "clf_tf_ok": false,
+      "expected_tf_clf": "rename_only",
+      "clf_top3": [
+        [
+          "count_agg",
+          0.2401
+        ],
+        [
+          "fk_dimension_enrichment",
+          0.182
+        ],
+        [
+          "fallback_lookup",
+          0.0588
+        ]
+      ],
+      "clf_top3_hit": false,
+      "hybrid_pass": false,
+      "llm_pass": true
+    },
+    {
+      "target": "dim_employee.full_name (string)",
+      "scenario": "HR Schema",
+      "cols_ok": true,
+      "expected_cols": [
+        "employees.first_name",
+        "employees.last_name"
+      ],
+      "predicted_cols": [
+        "employees.first_name",
+        "employees.last_name"
+      ],
+      "llm_tf": "concat",
+      "llm_tf_ok": true,
+      "expected_tf_llm": "concat",
+      "clf_tf": "concat",
+      "clf_conf": 0.9988,
+      "clf_tf_ok": true,
+      "expected_tf_clf": "concat",
+      "clf_top3": [
+        [
+          "concat",
+          0.9988
+        ],
+        [
+          "string_agg",
+          0.0001
+        ],
+        [
+          "substring",
+          0.0001
+        ]
+      ],
+      "clf_top3_hit": true,
+      "hybrid_pass": true,
+      "llm_pass": true
+    },
+    {
+      "target": "dim_employee.hire_year (int)",
+      "scenario": "HR Schema",
+      "cols_ok": true,
+      "expected_cols": [
+        "employees.hire_date"
+      ],
+      "predicted_cols": [
+        "employees.hire_date"
+      ],
+      "llm_tf": "date_part",
+      "llm_tf_ok": true,
+      "expected_tf_llm": "date_part",
+      "clf_tf": "extract_year",
+      "clf_conf": 0.9989,
+      "clf_tf_ok": true,
+      "expected_tf_clf": "extract_year",
+      "clf_top3": [
+        [
+          "extract_year",
+          0.9989
+        ],
+        [
+          "substring",
+          0.0002
+        ],
+        [
+          "date_trunc_year",
+          0.0001
+        ]
+      ],
+      "clf_top3_hit": true,
+      "hybrid_pass": true,
+      "llm_pass": true
+    },
+    {
+      "target": "dim_employee.department_name (string)",
+      "scenario": "HR Schema",
+      "cols_ok": true,
+      "expected_cols": [
+        "departments.dept_name"
+      ],
+      "predicted_cols": [
+        "departments.dept_name"
+      ],
+      "llm_tf": "rename",
+      "llm_tf_ok": false,
+      "expected_tf_llm": "fk_lookup",
+      "clf_tf": "regex_extract",
+      "clf_conf": 0.8377,
+      "clf_tf_ok": false,
+      "expected_tf_clf": "fk_dimension_enrichment",
+      "clf_top3": [
+        [
+          "regex_extract",
+          0.8377
+        ],
+        [
+          "substring",
+          0.0921
+        ],
+        [
+          "hierarchy_rollup",
+          0.0082
+        ]
+      ],
+      "clf_top3_hit": false,
+      "hybrid_pass": false,
+      "llm_pass": false
+    },
+    {
+      "target": "dim_employee.annual_salary (decimal)",
+      "scenario": "HR Schema",
+      "cols_ok": true,
+      "expected_cols": [
+        "employees.salary"
+      ],
+      "predicted_cols": [
+        "employees.salary"
+      ],
+      "llm_tf": "arithmetic",
+      "llm_tf_ok": false,
+      "expected_tf_llm": "rename",
+      "clf_tf": "substring",
+      "clf_conf": 0.9739,
+      "clf_tf_ok": false,
+      "expected_tf_clf": "rename_only",
+      "clf_top3": [
+        [
+          "substring",
+          0.9739
+        ],
+        [
+          "not_op",
+          0.003
+        ],
+        [
+          "distinct_count",
+          0.0026
+        ]
+      ],
+      "clf_top3_hit": false,
+      "hybrid_pass": false,
+      "llm_pass": false
+    },
+    {
+      "target": "fact_order.customer_country (string)",
+      "scenario": "E-commerce Schema",
+      "cols_ok": true,
+      "expected_cols": [
+        "customers.country"
+      ],
+      "predicted_cols": [
+        "customers.country"
+      ],
+      "llm_tf": "rename",
+      "llm_tf_ok": false,
+      "expected_tf_llm": "fk_lookup",
+      "clf_tf": "split",
+      "clf_conf": 0.1644,
+      "clf_tf_ok": false,
+      "expected_tf_clf": "fk_dimension_enrichment",
+      "clf_top3": [
+        [
+          "split",
+          0.1644
+        ],
+        [
+          "lower",
+          0.1039
+        ],
+        [
+          "regex_extract",
+          0.0883
+        ]
+      ],
+      "clf_top3_hit": false,
+      "hybrid_pass": false,
+      "llm_pass": false
+    },
+    {
+      "target": "fact_order.customer_name (string)",
+      "scenario": "E-commerce Schema",
+      "cols_ok": true,
+      "expected_cols": [
+        "customers.first_name",
+        "customers.last_name"
+      ],
+      "predicted_cols": [
+        "customers.first_name",
+        "customers.last_name"
+      ],
+      "llm_tf": "concat",
+      "llm_tf_ok": true,
+      "expected_tf_llm": "concat",
+      "clf_tf": "concat",
+      "clf_conf": 0.9973,
+      "clf_tf_ok": true,
+      "expected_tf_clf": "concat",
+      "clf_top3": [
+        [
+          "concat",
+          0.9973
+        ],
+        [
+          "initcap",
+          0.0008
+        ],
+        [
+          "date_diff_days",
+          0.0002
+        ]
+      ],
+      "clf_top3_hit": true,
+      "hybrid_pass": true,
+      "llm_pass": true
+    },
+    {
+      "target": "fact_order.order_year (int)",
+      "scenario": "E-commerce Schema",
+      "cols_ok": true,
+      "expected_cols": [
+        "orders.order_date"
+      ],
+      "predicted_cols": [
+        "orders.order_date"
+      ],
+      "llm_tf": "date_part",
+      "llm_tf_ok": true,
+      "expected_tf_llm": "date_part",
+      "clf_tf": "extract_year",
+      "clf_conf": 0.9937,
+      "clf_tf_ok": true,
+      "expected_tf_clf": "extract_year",
+      "clf_top3": [
+        [
+          "extract_year",
+          0.9937
+        ],
+        [
+          "substring",
+          0.0024
+        ],
+        [
+          "date_trunc_year",
+          0.0009
+        ]
+      ],
+      "clf_top3_hit": true,
+      "hybrid_pass": true,
+      "llm_pass": true
+    },
+    {
+      "target": "fact_order.is_completed (boolean)",
+      "scenario": "E-commerce Schema",
+      "cols_ok": true,
+      "expected_cols": [
+        "orders.status"
+      ],
+      "predicted_cols": [
+        "orders.status"
+      ],
+      "llm_tf": "conditional",
+      "llm_tf_ok": true,
+      "expected_tf_llm": "conditional",
+      "clf_tf": "equality_check",
+      "clf_conf": 0.7188,
+      "clf_tf_ok": false,
+      "expected_tf_clf": "threshold_flag",
+      "clf_top3": [
+        [
+          "equality_check",
+          0.7188
+        ],
+        [
+          "threshold_flag",
+          0.052
+        ],
+        [
+          "fallback_lookup",
+          0.0433
+        ]
+      ],
+      "clf_top3_hit": true,
+      "hybrid_pass": false,
+      "llm_pass": true
+    },
+    {
+      "target": "fact_sales.line_total (decimal)",
+      "scenario": "E-commerce Schema",
+      "cols_ok": true,
+      "expected_cols": [
+        "order_items.quantity",
+        "order_items.unit_price"
+      ],
+      "predicted_cols": [
+        "order_items.quantity",
+        "order_items.unit_price"
+      ],
+      "llm_tf": "arithmetic",
+      "llm_tf_ok": true,
+      "expected_tf_llm": "arithmetic",
+      "clf_tf": "multiply",
+      "clf_conf": 0.9997,
+      "clf_tf_ok": true,
+      "expected_tf_clf": "multiply",
+      "clf_top3": [
+        [
+          "multiply",
+          0.9997
+        ],
+        [
+          "cumulative_sum",
+          0.0
+        ],
+        [
+          "regex_extract",
+          0.0
+        ]
+      ],
+      "clf_top3_hit": true,
+      "hybrid_pass": true,
+      "llm_pass": true
+    },
+    {
+      "target": "dim_product.category_label (string)",
+      "scenario": "E-commerce Schema",
+      "cols_ok": true,
+      "expected_cols": [
+        "products.category_code"
+      ],
+      "predicted_cols": [
+        "products.category_code"
+      ],
+      "llm_tf": "code_to_label",
+      "llm_tf_ok": true,
+      "expected_tf_llm": "code_to_label",
+      "clf_tf": "code_to_label",
+      "clf_conf": 0.9989,
+      "clf_tf_ok": true,
+      "expected_tf_clf": "code_to_label",
+      "clf_top3": [
+        [
+          "code_to_label",
+          0.9989
+        ],
+        [
+          "fallback_lookup",
+          0.0011
+        ],
+        [
+          "invalid_standardization",
+          0.0
+        ]
+      ],
+      "clf_top3_hit": true,
+      "hybrid_pass": true,
+      "llm_pass": true
+    },
+    {
+      "target": "dim_patient.patient_name (string)",
+      "scenario": "Healthcare Schema",
+      "cols_ok": true,
+      "expected_cols": [
+        "patients.first_name",
+        "patients.last_name"
+      ],
+      "predicted_cols": [
+        "patients.first_name",
+        "patients.last_name"
+      ],
+      "llm_tf": "concat",
+      "llm_tf_ok": true,
+      "expected_tf_llm": "concat",
+      "clf_tf": "concat",
+      "clf_conf": 0.9981,
+      "clf_tf_ok": true,
+      "expected_tf_clf": "concat",
+      "clf_top3": [
+        [
+          "concat",
+          0.9981
+        ],
+        [
+          "date_diff_days",
+          0.0001
+        ],
+        [
+          "initcap",
+          0.0001
+        ]
+      ],
+      "clf_top3_hit": true,
+      "hybrid_pass": true,
+      "llm_pass": true
+    },
+    {
+      "target": "dim_patient.birth_year (int)",
+      "scenario": "Healthcare Schema",
+      "cols_ok": true,
+      "expected_cols": [
+        "patients.dob"
+      ],
+      "predicted_cols": [
+        "patients.dob"
+      ],
+      "llm_tf": "date_part",
+      "llm_tf_ok": true,
+      "expected_tf_llm": "date_part",
+      "clf_tf": "split",
+      "clf_conf": 0.7651,
+      "clf_tf_ok": false,
+      "expected_tf_clf": "extract_year",
+      "clf_top3": [
+        [
+          "split",
+          0.7651
+        ],
+        [
+          "extract_year",
+          0.1134
+        ],
+        [
+          "substring",
+          0.0384
+        ]
+      ],
+      "clf_top3_hit": true,
+      "hybrid_pass": false,
+      "llm_pass": true
+    },
+    {
+      "target": "dim_patient.gender_label (string)",
+      "scenario": "Healthcare Schema",
+      "cols_ok": true,
+      "expected_cols": [
+        "patients.gender_code"
+      ],
+      "predicted_cols": [
+        "patients.gender_code"
+      ],
+      "llm_tf": "conditional",
+      "llm_tf_ok": false,
+      "expected_tf_llm": "code_to_label",
+      "clf_tf": "code_to_label",
+      "clf_conf": 0.9995,
+      "clf_tf_ok": true,
+      "expected_tf_clf": "code_to_label",
+      "clf_top3": [
+        [
+          "code_to_label",
+          0.9995
+        ],
+        [
+          "fallback_lookup",
+          0.0003
+        ],
+        [
+          "and_op",
+          0.0
+        ]
+      ],
+      "clf_top3_hit": true,
+      "hybrid_pass": true,
+      "llm_pass": false
+    },
+    {
+      "target": "dim_patient.insurance_plan (string)",
+      "scenario": "Healthcare Schema",
+      "cols_ok": true,
+      "expected_cols": [
+        "insurance_plans.plan_name"
+      ],
+      "predicted_cols": [
+        "insurance_plans.plan_name"
+      ],
+      "llm_tf": "rename",
+      "llm_tf_ok": false,
+      "expected_tf_llm": "fk_lookup",
+      "clf_tf": "substring",
+      "clf_conf": 0.8997,
+      "clf_tf_ok": false,
+      "expected_tf_clf": "fk_dimension_enrichment",
+      "clf_top3": [
+        [
+          "substring",
+          0.8997
+        ],
+        [
+          "split",
+          0.0484
+        ],
+        [
+          "subtract",
+          0.008
+        ]
+      ],
+      "clf_top3_hit": false,
+      "hybrid_pass": false,
+      "llm_pass": false
+    },
+    {
+      "target": "fact_visit.patient_age_at_visit (int)",
+      "scenario": "Healthcare Schema",
+      "cols_ok": false,
+      "expected_cols": [
+        "patients.dob",
+        "visits.visit_date"
+      ],
+      "predicted_cols": [
+        "patients.dob",
+        "patients.patient_id"
+      ],
+      "llm_tf": "date_diff",
+      "llm_tf_ok": true,
+      "expected_tf_llm": "date_diff",
+      "clf_tf": "extract_year",
+      "clf_conf": 0.1997,
+      "clf_tf_ok": false,
+      "expected_tf_clf": "date_difference",
+      "clf_top3": [
+        [
+          "extract_year",
+          0.1997
+        ],
+        [
+          "subtract",
+          0.1967
+        ],
+        [
+          "add",
+          0.0547
+        ]
+      ],
+      "clf_top3_hit": false,
+      "hybrid_pass": false,
+      "llm_pass": false
+    },
+    {
+      "target": "fact_visit.department_name (string)",
+      "scenario": "Healthcare Schema",
+      "cols_ok": false,
+      "expected_cols": [
+        "hospital_departments.dept_name"
+      ],
+      "predicted_cols": [
+        "doctors.department_id",
+        "patients.insurance_id"
+      ],
+      "llm_tf": "fk_lookup",
+      "llm_tf_ok": false,
+      "expected_tf_llm": "lookup_join",
+      "clf_tf": "fk_dimension_enrichment",
+      "clf_conf": 0.2158,
+      "clf_tf_ok": false,
+      "expected_tf_clf": "multi_hop_lookup",
+      "clf_top3": [
+        [
+          "fk_dimension_enrichment",
+          0.2158
+        ],
+        [
+          "subtract",
+          0.0706
+        ],
+        [
+          "code_to_label",
+          0.0686
+        ]
+      ],
+      "clf_top3_hit": false,
+      "hybrid_pass": false,
+      "llm_pass": false
+    },
+    {
+      "target": "dim_customer.customer_name (string)",
+      "scenario": "Banking Schema (with noise columns)",
+      "cols_ok": true,
+      "expected_cols": [
+        "bank_customers.first_name",
+        "bank_customers.last_name"
+      ],
+      "predicted_cols": [
+        "bank_customers.first_name",
+        "bank_customers.last_name"
+      ],
+      "llm_tf": "concat",
+      "llm_tf_ok": true,
+      "expected_tf_llm": "concat",
+      "clf_tf": "concat",
+      "clf_conf": 0.9973,
+      "clf_tf_ok": true,
+      "expected_tf_clf": "concat",
+      "clf_top3": [
+        [
+          "concat",
+          0.9973
+        ],
+        [
+          "initcap",
+          0.0008
+        ],
+        [
+          "date_diff_days",
+          0.0002
+        ]
+      ],
+      "clf_top3_hit": true,
+      "hybrid_pass": true,
+      "llm_pass": true
+    },
+    {
+      "target": "dim_account.account_type_label (string)",
+      "scenario": "Banking Schema (with noise columns)",
+      "cols_ok": true,
+      "expected_cols": [
+        "bank_accounts.account_type_code"
+      ],
+      "predicted_cols": [
+        "bank_accounts.account_type_code"
+      ],
+      "llm_tf": "code_to_label",
+      "llm_tf_ok": true,
+      "expected_tf_llm": "code_to_label",
+      "clf_tf": "fallback_lookup",
+      "clf_conf": 0.4966,
+      "clf_tf_ok": false,
+      "expected_tf_clf": "code_to_label",
+      "clf_top3": [
+        [
+          "fallback_lookup",
+          0.4966
+        ],
+        [
+          "code_to_label",
+          0.446
+        ],
+        [
+          "substring",
+          0.0261
+        ]
+      ],
+      "clf_top3_hit": true,
+      "hybrid_pass": false,
+      "llm_pass": true
+    },
+    {
+      "target": "dim_account.is_active (boolean)",
+      "scenario": "Banking Schema (with noise columns)",
+      "cols_ok": true,
+      "expected_cols": [
+        "bank_accounts.status_code"
+      ],
+      "predicted_cols": [
+        "bank_accounts.status_code"
+      ],
+      "llm_tf": "conditional",
+      "llm_tf_ok": true,
+      "expected_tf_llm": "conditional",
+      "clf_tf": "equality_check",
+      "clf_conf": 0.9997,
+      "clf_tf_ok": false,
+      "expected_tf_clf": "threshold_flag",
+      "clf_top3": [
+        [
+          "equality_check",
+          0.9997
+        ],
+        [
+          "regex_extract",
+          0.0001
+        ],
+        [
+          "eq",
+          0.0
+        ]
+      ],
+      "clf_top3_hit": false,
+      "hybrid_pass": false,
+      "llm_pass": true
+    },
+    {
+      "target": "dim_customer.income_bracket (string)",
+      "scenario": "Banking Schema (with noise columns)",
+      "cols_ok": true,
+      "expected_cols": [
+        "bank_customers.income_annual"
+      ],
+      "predicted_cols": [
+        "bank_customers.income_annual"
+      ],
+      "llm_tf": "bucketing",
+      "llm_tf_ok": true,
+      "expected_tf_llm": "bucketing",
+      "clf_tf": "substring",
+      "clf_conf": 0.2928,
+      "clf_tf_ok": false,
+      "expected_tf_clf": "bucketing_binning",
+      "clf_top3": [
+        [
+          "substring",
+          0.2928
+        ],
+        [
+          "regex_extract",
+          0.0952
+        ],
+        [
+          "cast_to_decimal",
+          0.0896
+        ]
+      ],
+      "clf_top3_hit": false,
+      "hybrid_pass": false,
+      "llm_pass": true
+    },
+    {
+      "target": "fact_txn.transaction_year (int)",
+      "scenario": "Banking Schema (with noise columns)",
+      "cols_ok": true,
+      "expected_cols": [
+        "bank_transactions.txn_date"
+      ],
+      "predicted_cols": [
+        "bank_transactions.txn_date"
+      ],
+      "llm_tf": "date_part",
+      "llm_tf_ok": true,
+      "expected_tf_llm": "date_part",
+      "clf_tf": "extract_year",
+      "clf_conf": 0.8595,
+      "clf_tf_ok": true,
+      "expected_tf_clf": "extract_year",
+      "clf_top3": [
+        [
+          "extract_year",
+          0.8595
+        ],
+        [
+          "substring",
+          0.0444
+        ],
+        [
+          "date_trunc_year",
+          0.0327
+        ]
+      ],
+      "clf_top3_hit": true,
+      "hybrid_pass": true,
+      "llm_pass": true
+    }
+  ]
+}
